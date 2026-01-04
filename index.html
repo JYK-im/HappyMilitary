@@ -117,57 +117,39 @@
         }
     });
 
-    // 실제 데이터 강제 로딩 (다중 프록시 전략)
-    // --- [데이터 로드 부분만 이 코드로 교체하세요] ---
-
-async function fetchIPOData() {
+   async function fetchIPOData() {
     const list = document.getElementById('rankingList');
-    
-    // 1. 엔드포인트와 인증키 분리 (이미 인코딩된 키 사용)
-    const baseUrl = "https://apis.data.go.kr/1160100/service/GetStocIssuInfoService_V2/getIpoTabInfo";
+    // 인코딩된 키 (image_0f5927.png 참조)
     const serviceKey = "uDGP%2FFa5Y1fGcPUKw0BZ1Xsk2GDQnvbkgBhc9X4UjhWn7dr51gy94ulb7ZwLJDzp6sAJ7k5JR00SSAtC3sagrw%3D%3D";
     
-    // 2. 파라미터 조립 (주소 뒤에 붙을 데이터들)
-    const finalApiUrl = `${baseUrl}?serviceKey=${serviceKey}&resultType=json&numOfRows=50&pageNo=1`;
+    // 프록시를 다 걷어내고 '직접' 주소를 만듭니다.
+    const directUrl = `https://apis.data.go.kr/1160100/service/GetStocIssuInfoService_V2/getIpoTabInfo?serviceKey=${serviceKey}&resultType=json&numOfRows=50&pageNo=1`;
 
-    // 3. 프록시 시도 (가장 성공률 높은 순서)
-    const proxies = [
-        `https://api.allorigins.win/get?url=${encodeURIComponent(finalApiUrl)}`,
-        `https://cors-anywhere.herokuapp.com/${finalApiUrl}`
-    ];
+    try {
+        console.log("📍 API 직접 호출 시도...");
+        const response = await fetch(directUrl);
+        
+        if (!response.ok) throw new Error(`HTTP 상태: ${response.status}`);
 
-    for (let proxyUrl of proxies) {
-        try {
-            console.log("🚀 데이터 요청 시작:", proxyUrl);
-            const res = await fetch(proxyUrl);
-            
-            if (!res.ok) throw new Error(`서버 응답 오류: ${res.status}`);
+        const data = await response.json();
+        const items = data?.response?.body?.items?.item;
 
-            let data;
-            if (proxyUrl.includes("allorigins")) {
-                const json = await res.json();
-                // allorigins는 내부 contents에 문자열로 담아주므로 다시 파싱
-                data = typeof json.contents === 'string' ? JSON.parse(json.contents) : json.contents;
-            } else {
-                data = await res.json();
-            }
-
-            // 4. 데이터 구조 파고들기
-            const items = data?.response?.body?.items?.item;
-            if (items) {
-                ipoData = Array.isArray(items) ? items : [items];
-                console.log("✅ 데이터 로드 성공!", ipoData.length, "건 수신");
-                renderAll();
-                return; // 성공했으므로 함수 종료
-            } else {
-                console.warn("⚠️ 응답은 왔으나 아이템이 비어있음:", data);
-            }
-        } catch (e) {
-            console.error(`❌ 경로 실패 (${proxyUrl}):`, e.message);
+        if (items) {
+            ipoData = Array.isArray(items) ? items : [items];
+            console.log("✅ [성공] 데이터를 직접 수신했습니다!", ipoData.length, "건");
+            renderAll();
+        } else {
+            console.error("❌ 데이터 구조 오류:", data);
+            list.innerHTML = "<p class='text-yellow-500 text-xs'>API 키 승인 대기 중이거나 데이터가 없습니다.</p>";
         }
+    } catch (e) {
+        console.error("❌ 직접 호출 실패:", e.message);
+        list.innerHTML = `
+            <div class='text-center'>
+                <p class='text-red-500 text-xs mb-2'>CORS 보안 차단 발생</p>
+                <p class='text-[9px] text-gray-500'>로컬 환경이나 프록시 서버 모두<br>공공데이터 서버에서 거부되었습니다.</p>
+            </div>`;
     }
-
-    list.innerHTML = "<p class='text-red-500 text-center text-xs'>데이터를 불러오는 데 실패했습니다.<br>잠시 후 다시 시도해주세요.</p>";
 }
 
     function renderAll() {
@@ -240,6 +222,7 @@ async function fetchIPOData() {
 </script>
 </body>
 </html>
+
 
 
 
