@@ -118,30 +118,53 @@
     });
 
     // 실제 데이터 강제 로딩 (다중 프록시 전략)
-    async function fetchIPOData() {
-        const sKey = "uDGP%2FFa5Y1fGcPUKw0BZ1Xsk2GDQnvbkgBhc9X4UjhWn7dr51gy94ulb7ZwLJDzp6sAJ7k5JR00SSAtC3sagrw%3D%3D";
-        const apiUrl = `https://apis.data.go.kr/1160100/service/GetStocIssuInfoService_V2/getIpoTabInfo?serviceKey=${sKey}&resultType=json&numOfRows=100&pageNo=1`;
-        
+    // --- [데이터 로드 부분만 이 코드로 교체하세요] ---
+
+async function fetchIPOData() {
+    const list = document.getElementById('rankingList');
+    // 공공데이터포털에서 받은 'Decoding' 인증키를 사용합니다.
+    const serviceKey = "uDGP/Fa5Y1fGcPUKw0BZ1Xsk2GDQnvbkgBhc9X4UjhWn7dr51gy94ulb7ZwLJDzp6sAJ7k5JR00SSAtC3sagrw==";
+    const baseUrl = "https://apis.data.go.kr/1160100/service/GetStocIssuInfoService_V2/getIpoTabInfo";
+    
+    // 주소 조립 (인코딩 조심)
+    const queryParams = `?serviceKey=${encodeURIComponent(serviceKey)}&resultType=json&numOfRows=50&pageNo=1`;
+    const fullUrl = baseUrl + queryParams;
+
+    // 프록시 서버 목록 (하나가 안되면 다음 것을 사용)
+    const proxies = [
+        `https://api.allorigins.win/get?url=${encodeURIComponent(fullUrl)}`,
+        `https://cors-anywhere.herokuapp.com/${fullUrl}`,
+        fullUrl // 직접 호출 (로컬 테스트용)
+    ];
+
+    for (let proxyUrl of proxies) {
         try {
-            // 전략 1: AllOrigins 사용
-            const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`);
-            const json = await res.json();
-            const parsed = JSON.parse(json.contents);
-            ipoData = parsed.response.body.items.item || [];
-            if(ipoData.length === 0) throw new Error("Empty Data");
-        } catch (e) {
-            console.warn("첫 번째 경로 실패, 대안 경로 시도...");
-            // 전략 2: 데이터가 정말 안올 경우를 대비한 공공데이터 포털 직접 요청 (CORS 위험 감수)
-            try {
-                const res = await fetch(apiUrl);
-                const data = await res.json();
-                ipoData = data.response.body.items.item || [];
-            } catch (err) {
-                document.getElementById('rankingList').innerHTML = "<p class='text-red-500 text-center text-xs'>서버 응답 지연 (새로고침 요망)</p>";
+            const res = await fetch(proxyUrl);
+            if (!res.ok) throw new Error("네트워크 응답 없음");
+            
+            let data;
+            if (proxyUrl.includes("allorigins")) {
+                const json = await res.json();
+                data = JSON.parse(json.contents);
+            } else {
+                data = await res.json();
             }
+
+            if (data?.response?.body?.items?.item) {
+                ipoData = data.response.body.items.item;
+                console.log("실제 데이터 수신 성공:", ipoData.length, "건");
+                renderAll();
+                return; // 성공 시 함수 종료
+            }
+        } catch (e) {
+            console.warn(`접속 시도 실패 (${proxyUrl}):`, e.message);
+            continue; // 다음 프록시 시도
         }
-        renderAll();
     }
+
+    // 모든 시도 실패 시
+    list.innerHTML = "<p class='text-red-500 text-center text-xs'>데이터 서버 점검 중입니다.<br>잠시 후 다시 시도해주세요.</p>";
+}
 
     function renderAll() {
         renderRanking();
@@ -213,3 +236,4 @@
 </script>
 </body>
 </html>
+
