@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>배당픽(Dividend Pick) | 실시간 투자 데이터</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700&display=swap');
+        body { font-family: 'Pretendard', sans-serif; background-color: #121418; color: #e1e1e1; }
+        .accent-green { color: #2ecc71; }
+        .bg-card { background-color: #1c1f26; border: 1px solid #2d333e; }
+        .btn-green { background-color: #2ecc71; color: #121418; font-weight: bold; }
+        .ipo-tag { background-color: #2ecc71; color: #121418; font-size: 9px; font-weight: bold; border-radius: 4px; padding: 1px 3px; display: block; margin-top: 2px; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="p-4 md:p-6">
+
+    <header class="max-w-7xl mx-auto flex justify-between items-center py-4 mb-6 border-b border-gray-800">
+        <div class="flex items-center gap-2">
+            <div class="bg-[#2ecc71] p-2 rounded-lg"><i class="fa-solid fa-bolt text-black text-xl"></i></div>
+            <h1 class="text-2xl font-black italic uppercase">Dividend <span class="accent-green">Pick</span></h1>
+        </div>
+        <div id="authArea" class="flex items-center gap-4">
+            <button id="loginBtn" onclick="window.login()" class="text-xs bg-white text-black px-4 py-2 rounded-full font-bold">구글 로그인</button>
+            <div id="userInfo" class="hidden flex items-center gap-2 text-sm font-bold">
+                <span id="userNick" class="accent-green"></span>님 
+                <button onclick="window.logout()" class="text-gray-500 text-xs underline ml-2">로그아웃</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto grid grid-cols-1 xl:grid-cols-4 gap-6">
+        
+        <div class="xl:col-span-1 space-y-6">
+            <section class="bg-card p-6 rounded-xl min-h-[500px]">
+                <h2 class="text-lg font-bold mb-4 italic uppercase"><i class="fa-solid fa-crown mr-2 accent-green"></i>Market Ranking</h2>
+                <div id="rankingList" class="space-y-4 text-sm">
+                    <p class="text-gray-500 animate-pulse text-center mt-10">데이터 로드 중...</p>
+                </div>
+            </section>
+        </div>
+
+        <div class="xl:col-span-2 space-y-6">
+            <section class="bg-card p-6 rounded-xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold italic uppercase"><i class="fa-solid fa-calendar-days mr-2 accent-green"></i>IPO Calendar</h2>
+                    <div class="flex items-center gap-4 bg-black p-2 rounded-lg">
+                        <button onclick="window.changeMonth(-1)" class="hover:text-green-500 px-2"><i class="fa-solid fa-chevron-left"></i></button>
+                        <span id="currentDateLabel" class="font-bold text-lg min-w-[120px] text-center text-green-400"></span>
+                        <button onclick="window.changeMonth(1)" class="hover:text-green-500 px-2"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                <div id="calendarGrid" class="grid grid-cols-7 gap-px bg-gray-700 border border-gray-700 rounded-lg overflow-hidden text-[10px]">
+                    <div class="bg-gray-800 p-2 text-center text-red-400">일</div>
+                    <div class="bg-gray-800 p-2 text-center text-gray-400">월</div>
+                    <div class="bg-gray-800 p-2 text-center text-gray-400">화</div>
+                    <div class="bg-gray-800 p-2 text-center text-gray-400">수</div>
+                    <div class="bg-gray-800 p-2 text-center text-gray-400">목</div>
+                    <div class="bg-gray-800 p-2 text-center text-gray-400">금</div>
+                    <div class="bg-gray-800 p-2 text-center text-blue-400">토</div>
+                </div>
+            </section>
+        </div>
+
+        <div class="xl:col-span-1 space-y-6">
+            <section class="bg-card p-5 rounded-xl h-[550px] flex flex-col relative">
+                <h2 class="font-bold mb-4 accent-green italic uppercase"><i class="fa-solid fa-comments mr-2"></i>Live Talk</h2>
+                <div id="msgBox" class="flex-1 overflow-y-auto space-y-3 mb-4 text-xs scrollbar-hide"></div>
+                
+                <div id="chatLock" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center p-6 text-center z-10 rounded-xl">
+                    <p class="text-sm font-bold mb-4">로그인 후 참여 가능</p>
+                    <button onclick="window.login()" class="btn-green px-6 py-2 rounded-full text-xs">구글 로그인</button>
+                </div>
+
+                <div id="chatInputArea" class="hidden flex flex-col gap-2">
+                    <input type="text" id="msg" placeholder="메시지를 입력하세요" class="bg-black border border-gray-700 p-2 rounded text-sm outline-none focus:border-green-500">
+                    <button onclick="window.sendMsg()" class="btn-green w-full py-2 rounded text-sm">전송</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="profileModal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+        <div class="bg-gray-900 p-8 rounded-2xl border border-gray-700 max-w-sm w-full">
+            <h3 class="text-xl font-bold mb-6 text-center italic">USER PROFILE</h3>
+            <div class="space-y-4">
+                <select id="userGender" class="w-full bg-black border border-gray-700 p-3 rounded-lg"><option value="남성">남성</option><option value="여성">여성</option></select>
+                <select id="userAge" class="w-full bg-black border border-gray-700 p-3 rounded-lg"><option value="20대">20대</option><option value="30대">30대</option><option value="40대">40대</option><option value="50대+">50대 이상</option></select>
+                <button onclick="window.saveProfile()" class="w-full btn-green py-3 rounded-lg mt-4">시작하기</button>
+            </div>
+        </div>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDaNmDpDXgiuELEO65Wk0PazVT2yeQeags",
+        authDomain: "dividend-b090d.firebaseapp.com",
+        projectId: "dividend-b090d",
+        storageBucket: "dividend-b090d.firebasestorage.app",
+        messagingSenderId: "543720180150",
+        appId: "1:543720180150:web:15073a1e9706bb1f949917"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    let currentUser = null;
+    let userData = null;
+    let viewDate = new Date();
+    let ipoCache = [];
+
+    // --- 전역 함수 등록 ---
+    window.login = () => signInWithPopup(auth, provider);
+    window.logout = () => signOut(auth);
+    window.changeMonth = (val) => { viewDate.setMonth(viewDate.getMonth() + val); renderCalendar(); };
+
+    // --- 인증 처리 ---
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUser = user;
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (!userDoc.exists()) {
+                document.getElementById('profileModal').classList.remove('hidden');
+            } else {
+                userData = userDoc.data();
+                showChat();
+            }
+        } else { hideChat(); }
+    });
+
+    window.saveProfile = async () => {
+        const gender = document.getElementById('userGender').value;
+        const age = document.getElementById('userAge').value;
+        userData = { name: currentUser.displayName, gender, age };
+        await setDoc(doc(db, "users", currentUser.uid), userData);
+        document.getElementById('profileModal').classList.add('hidden');
+        showChat();
+    };
+
+    const showChat = () => {
+        document.getElementById('chatLock').classList.add('hidden');
+        document.getElementById('chatInputArea').classList.remove('hidden');
+        document.getElementById('userInfo').classList.remove('hidden');
+        document.getElementById('loginBtn').classList.add('hidden');
+        document.getElementById('userNick').innerText = currentUser.displayName;
+    };
+
+    const hideChat = () => {
+        document.getElementById('chatLock').classList.remove('hidden');
+        document.getElementById('chatInputArea').classList.add('hidden');
+        document.getElementById('userInfo').classList.add('hidden');
+        document.getElementById('loginBtn').classList.remove('hidden');
+    };
+
+    // --- 공공데이터 호출 (프록시 적용) ---
+    async function fetchData() {
+        // 이미지로 주신 Decoding 인증키 사용
+        const serviceKey = "uDGP/Fa5Y1fGcPUKw0BZ1Xsk2GDQnvbkgBhc9X4UjhWn7dr51gy94ulb7ZwLJDzp6sAJ7k5JR00SSAtC3sagrw==";
+        const url = `https://apis.data.go.kr/1160100/service/GetStocIssuInfoService_V2/getIpoTabInfo?serviceKey=${encodeURIComponent(serviceKey)}&resultType=json&numOfRows=100&pageNo=1`;
+        
+        // CORS 우회를 위한 프록시
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+
+        try {
+            const response = await fetch(proxyUrl);
+            const resJson = await response.json();
+            const data = JSON.parse(resJson.contents);
+            ipoCache = data.response.body.items.item || [];
+            
+            renderRanking();
+            renderCalendar();
+        } catch (e) {
+            console.error("데이터 로드 실패:", e);
+            document.getElementById('rankingList').innerText = "데이터 로드 실패 (CORS)";
+        }
+    }
+
+    function renderRanking() {
+        const listEl = document.getElementById('rankingList');
+        // 상위 10개만 랭킹으로 표시
+        const top10 = ipoCache.slice(0, 10);
+        listEl.innerHTML = top10.map((item, idx) => `
+            <div class="flex justify-between items-center p-3 bg-black/30 rounded-lg border border-gray-800">
+                <div class="flex items-center gap-3">
+                    <span class="text-green-500 font-bold">0${idx + 1}</span>
+                    <span class="font-bold text-[13px]">${item.corpNm}</span>
+                </div>
+                <div class="text-right">
+                    <p class="text-[9px] text-gray-500 italic">공모가(하한)</p>
+                    <p class="text-white font-bold">${parseInt(item.ipoPrcLow).toLocaleString()}원</p>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function renderCalendar() {
+        const grid = document.getElementById('calendarGrid');
+        const label = document.getElementById('currentDateLabel');
+        const year = viewDate.getFullYear();
+        const month = viewDate.getMonth();
+        label.innerText = `${year}.${(month + 1).toString().padStart(2, '0')}`;
+
+        while (grid.children.length > 7) grid.removeChild(grid.lastChild);
+        
+        const firstDay = new Date(year, month, 1).getDay();
+        const lastDate = new Date(year, month + 1, 0).getDate();
+
+        for (let j = 0; j < firstDay; j++) {
+            grid.appendChild(document.createElement('div')).className = "bg-[#16191d] p-1 min-h-[60px] border-b border-r border-gray-800";
+        }
+
+        for (let i = 1; i <= lastDate; i++) {
+            const dayDiv = document.createElement('div');
+            dayDiv.className = "bg-[#1c1f26] p-1 min-h-[60px] border-b border-r border-gray-800";
+            const dateStr = `${year}${(month + 1).toString().padStart(2, '0')}${i.toString().padStart(2, '0')}`;
+            
+            let ipoHtml = "";
+            ipoCache.forEach(item => {
+                if (String(item.subscrptStrtDt) === dateStr) {
+                    ipoHtml += `<div class="ipo-tag truncate">📢 ${item.corpNm}</div>`;
+                }
+            });
+
+            dayDiv.innerHTML = `<span class="text-gray-500">${i}</span>${ipoHtml}`;
+            grid.appendChild(dayDiv);
+        }
+    }
+
+    // --- 채팅 기능 ---
+    window.sendMsg = async () => {
+        const msgText = document.getElementById('msg').value;
+        if (!msgText || !currentUser) return;
+        await addDoc(collection(db, "chats"), {
+            nick: currentUser.displayName,
+            msg: msgText,
+            age: userData.age,
+            gender: userData.gender,
+            time: serverTimestamp()
+        });
+        document.getElementById('msg').value = "";
+    };
+
+    const q = query(collection(db, "chats"), orderBy("time", "asc"));
+    onSnapshot(q, (snap) => {
+        const box = document.getElementById('msgBox');
+        box.innerHTML = "";
+        snap.forEach(doc => {
+            const d = doc.data();
+            box.innerHTML += `<div class="bg-gray-800/50 p-2 rounded border border-gray-700">
+                <p class="text-[10px] text-green-400 font-bold mb-1">
+                    ${d.nick} <span class="text-gray-500 ml-1 font-normal">[${d.age}/${d.gender}]</span>
+                </p>
+                <p class="text-gray-200">${d.msg}</p>
+            </div>`;
+        });
+        box.scrollTop = box.scrollHeight;
+    });
+
+    fetchData();
+</script>
+</body>
+</html>
