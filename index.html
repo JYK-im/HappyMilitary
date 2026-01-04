@@ -122,26 +122,26 @@
 
 async function fetchIPOData() {
     const list = document.getElementById('rankingList');
-    // 공공데이터포털에서 받은 'Decoding' 인증키를 사용합니다.
-    const serviceKey = "uDGP/Fa5Y1fGcPUKw0BZ1Xsk2GDQnvbkgBhc9X4UjhWn7dr51gy94ulb7ZwLJDzp6sAJ7k5JR00SSAtC3sagrw==";
-    const baseUrl = "https://apis.data.go.kr/1160100/service/GetStocIssuInfoService_V2/getIpoTabInfo";
+    // 1. Encoding된 키를 사용합니다 (image_0f5927.png 기반)
+    const serviceKey = "uDGP%2FFa5Y1fGcPUKw0BZ1Xsk2GDQnvbkgBhc9X4UjhWn7dr51gy94ulb7ZwLJDzp6sAJ7k5JR00SSAtC3sagrw%3D%3D";
     
-    // 주소 조립 (인코딩 조심)
-    const queryParams = `?serviceKey=${encodeURIComponent(serviceKey)}&resultType=json&numOfRows=50&pageNo=1`;
+    // 2. 엔드포인트 주소를 정확하게 확인 (getIpoTabInfo 포함 필수)
+    const baseUrl = "https://apis.data.go.kr/1160100/service/GetStocIssuInfoService_V2/getIpoTabInfo";
+    const queryParams = `?serviceKey=${serviceKey}&resultType=json&numOfRows=50&pageNo=1`;
     const fullUrl = baseUrl + queryParams;
 
-    // 프록시 서버 목록 (하나가 안되면 다음 것을 사용)
+    // 3. 더 안정적인 프록시 순서로 시도
     const proxies = [
         `https://api.allorigins.win/get?url=${encodeURIComponent(fullUrl)}`,
-        `https://cors-anywhere.herokuapp.com/${fullUrl}`,
-        fullUrl // 직접 호출 (로컬 테스트용)
+        `https://cors-anywhere.herokuapp.com/${fullUrl}`
     ];
 
     for (let proxyUrl of proxies) {
         try {
+            console.log("데이터 시도 중:", proxyUrl);
             const res = await fetch(proxyUrl);
-            if (!res.ok) throw new Error("네트워크 응답 없음");
-            
+            if (!res.ok) throw new Error("응답 에러");
+
             let data;
             if (proxyUrl.includes("allorigins")) {
                 const json = await res.json();
@@ -150,20 +150,22 @@ async function fetchIPOData() {
                 data = await res.json();
             }
 
+            // 공공데이터 특유의 응답 경로 확인
             if (data?.response?.body?.items?.item) {
-                ipoData = data.response.body.items.item;
-                console.log("실제 데이터 수신 성공:", ipoData.length, "건");
+                ipoData = Array.isArray(data.response.body.items.item) 
+                          ? data.response.body.items.item 
+                          : [data.response.body.items.item];
+                
+                console.log("✅ 실제 데이터 수신 성공:", ipoData.length, "건");
                 renderAll();
-                return; // 성공 시 함수 종료
+                return;
             }
         } catch (e) {
-            console.warn(`접속 시도 실패 (${proxyUrl}):`, e.message);
-            continue; // 다음 프록시 시도
+            console.warn("경로 실패, 다음 대안 시도...");
         }
     }
 
-    // 모든 시도 실패 시
-    list.innerHTML = "<p class='text-red-500 text-center text-xs'>데이터 서버 점검 중입니다.<br>잠시 후 다시 시도해주세요.</p>";
+    list.innerHTML = "<p class='text-gray-500 text-center text-xs'>데이터를 불러오는 중입니다...<br>잠시 후 새로고침 해주세요.</p>";
 }
 
     function renderAll() {
@@ -236,4 +238,5 @@ async function fetchIPOData() {
 </script>
 </body>
 </html>
+
 
