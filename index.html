@@ -122,50 +122,48 @@
 
 async function fetchIPOData() {
     const list = document.getElementById('rankingList');
-    // 1. 반드시 'Encoding'된 키를 사용하세요 (image_0f5927.png의 첫 번째 키)
-    const serviceKey = "uDGP%2FFa5Y1fGcPUKw0BZ1Xsk2GDQnvbkgBhc9X4UjhWn7dr51gy94ulb7ZwLJDzp6sAJ7k5JR00SSAtC3sagrw%3D%3D";
-    const baseUrl = "https://apis.data.go.kr/1160100/service/GetStocIssuInfoService_V2/getIpoTabInfo";
     
-    // 2. 주소 조립 (URLSearchParams를 사용하여 깨짐 방지)
-    const params = new URLSearchParams({
-        resultType: 'json',
-        numOfRows: '50',
-        pageNo: '1'
-    });
-    // serviceKey는 이미 인코딩 되어 있으므로 직접 붙입니다.
-    const fullUrl = `${baseUrl}?serviceKey=${serviceKey}&${params.toString()}`;
+    // 1. 엔드포인트와 인증키 분리 (이미 인코딩된 키 사용)
+    const baseUrl = "https://apis.data.go.kr/1160100/service/GetStocIssuInfoService_V2/getIpoTabInfo";
+    const serviceKey = "uDGP%2FFa5Y1fGcPUKw0BZ1Xsk2GDQnvbkgBhc9X4UjhWn7dr51gy94ulb7ZwLJDzp6sAJ7k5JR00SSAtC3sagrw%3D%3D";
+    
+    // 2. 파라미터 조립 (주소 뒤에 붙을 데이터들)
+    const finalApiUrl = `${baseUrl}?serviceKey=${serviceKey}&resultType=json&numOfRows=50&pageNo=1`;
 
+    // 3. 프록시 시도 (가장 성공률 높은 순서)
     const proxies = [
-        `https://api.allorigins.win/get?url=${encodeURIComponent(fullUrl)}`,
-        `https://cors-anywhere.herokuapp.com/${fullUrl}`
+        `https://api.allorigins.win/get?url=${encodeURIComponent(finalApiUrl)}`,
+        `https://cors-anywhere.herokuapp.com/${finalApiUrl}`
     ];
 
     for (let proxyUrl of proxies) {
         try {
-            console.log("시도 중인 경로:", proxyUrl);
+            console.log("🚀 데이터 요청 시작:", proxyUrl);
             const res = await fetch(proxyUrl);
-            if (!res.ok) throw new Error(`HTTP 에러: ${res.status}`);
             
+            if (!res.ok) throw new Error(`서버 응답 오류: ${res.status}`);
+
             let data;
             if (proxyUrl.includes("allorigins")) {
                 const json = await res.json();
-                data = JSON.parse(json.contents);
+                // allorigins는 내부 contents에 문자열로 담아주므로 다시 파싱
+                data = typeof json.contents === 'string' ? JSON.parse(json.contents) : json.contents;
             } else {
                 data = await res.json();
             }
 
-            // 3. 공공데이터 응답 구조 정밀 체크
-            if (data?.response?.body?.items?.item) {
-                const items = data.response.body.items.item;
+            // 4. 데이터 구조 파고들기
+            const items = data?.response?.body?.items?.item;
+            if (items) {
                 ipoData = Array.isArray(items) ? items : [items];
-                console.log("✅ 실제 데이터 로드 성공:", ipoData.length, "건");
+                console.log("✅ 데이터 로드 성공!", ipoData.length, "건 수신");
                 renderAll();
-                return; 
+                return; // 성공했으므로 함수 종료
             } else {
-                console.warn("응답은 성공했으나 데이터 아이템이 비어있음:", data);
+                console.warn("⚠️ 응답은 왔으나 아이템이 비어있음:", data);
             }
         } catch (e) {
-            console.error(`접속 실패 (${proxyUrl}):`, e.message);
+            console.error(`❌ 경로 실패 (${proxyUrl}):`, e.message);
         }
     }
 
@@ -242,6 +240,7 @@ async function fetchIPOData() {
 </script>
 </body>
 </html>
+
 
 
 
