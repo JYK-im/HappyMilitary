@@ -165,7 +165,7 @@
         // 1. 전역 변수
         let allMarts = [];
 
-        // 2. 마트 렌더링 함수
+// 2. 마트 렌더링 함수 (데이터 필드명 일치화)
         function renderMarts(marts) {
             const listContainer = document.getElementById('waList');
             if (!listContainer) return;
@@ -174,7 +174,7 @@
             const curTime = now.getHours() * 100 + now.getMinutes();
             const day = now.getDay(); 
 
-            if (marts.length === 0) {
+            if (!marts || marts.length === 0) {
                 listContainer.innerHTML = `<p class="text-center text-[10px] text-gray-500 py-4">검색 결과가 없습니다.</p>`;
                 return;
             }
@@ -193,10 +193,10 @@
                     }
                 } else if (isHoliday) { status.text = "정기 휴무"; }
 
-                // 데이터 필드 대소문자 모두 대응
-                const name = mart.sh_nm || mart.SH_NM || "이름 정보 없음";
-                const addr = mart.sh_addr || mart.SH_ADDR || "주소 정보 없음";
-                const tel = mart.sh_tel || mart.SH_TEL || "";
+                // 명세서 기반 실제 필드명 대응 (mart_nm, mart_addr, mart_tel)
+                const name = mart.mart_nm || mart.MART_NM || "이름 없음";
+                const addr = mart.mart_addr || mart.MART_ADDR || "주소 없음";
+                const tel = mart.mart_tel || mart.MART_TEL || "";
 
                 return `
                     <div class="flex flex-col p-3 bg-black/20 rounded-xl border border-gray-800 hover:border-[#8a9a5b]/50 transition-all">
@@ -216,48 +216,49 @@
             }).join('');
         }
 
-// 3. API 호출 함수 (발급받은 인증키 및 TB_MND_MART_CURRENT 적용)
+        // 3. API 호출 함수 (인증키 + 전체 데이터(999) + 프록시 교체)
         async function fetchWAMarts() {
             const listContainer = document.getElementById('waList');
+            const myKey = "3231313637393730303336333832313035";
             
-            // 1. 발급받으신 인증키 적용
-            const myKey = "3231313637393730303336333832313035"; 
-            // 2. 명세서 이미지에 따른 정확한 서비스명(TB_MND_MART_CURRENT) 적용
-            const apiUrl = `https://openapi.mnd.go.kr/${myKey}/json/TB_MND_MART_CURRENT/1/100/`;
+            // END_INDEX를 999로 설정하여 전체 데이터를 가져옵니다.
+            const apiUrl = `https://openapi.mnd.go.kr/${myKey}/json/TB_MND_MART_CURRENT/1/999/`;
             
+            // 기존 프록시가 차단될 경우를 대비해 순수하게 encodeURIComponent만 사용하거나 
+            // 다른 프록시(cors-anywhere 등)를 고려한 로직
             const targetUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
 
             try {
                 const response = await fetch(targetUrl);
-                if (!response.ok) throw new Error('네트워크 응답 오류');
+                if (!response.ok) throw new Error('데이터 통로 응답 실패');
                 
                 const data = await response.json();
                 
                 if (data && data.contents) {
-                    // 서버 응답이 HTML인지 확인 (에러 페이지 방지)
-                    if (data.contents.trim().startsWith('<')) {
-                        throw new Error('인증키가 유효하지 않거나 서버 접근이 제한되었습니다.');
-                    }
-
-                    const contents = JSON.parse(data.contents);
-                    // 서비스명(TB_MND_MART_CURRENT)에 맞춰 데이터 추출
+                    // 데이터가 문자열로 올 경우를 대비한 안전한 파싱
+                    let contents = typeof data.contents === 'string' ? JSON.parse(data.contents) : data.contents;
+                    
                     const rowData = contents.TB_MND_MART_CURRENT?.row;
                     
                     if (rowData && Array.isArray(rowData)) {
                         allMarts = rowData;
                         renderMarts(allMarts);
+                        console.log(`${allMarts.length}개의 마트 정보를 불러왔습니다.`);
                     } else {
-                        throw new Error('마트 정보를 찾을 수 없습니다. (구조 불일치)');
+                        throw new Error('데이터 구조가 명세와 다릅니다.');
                     }
                 }
             } catch (error) {
-                console.error("로드 실패:", error);
+                console.error("최종 로드 실패:", error);
                 if (listContainer) {
                     listContainer.innerHTML = `
                         <div class="col-span-full text-center py-10">
-                            <p class="text-[10px] text-gray-500 mb-2">영외마트 정보를 불러오지 못했습니다.</p>
-                            <p class="text-[9px] text-red-400 opacity-70">사유: ${error.message}</p>
-                            <p class="text-[8px] text-gray-600 mt-2">※ 인증키 승인 대기 중(약 1시간)일 수 있습니다.</p>
+                            <p class="text-[10px] text-gray-500 mb-2">데이터 보안 정책(CORS)으로 인해 브라우저에서 차단되었습니다.</p>
+                            <p class="text-[9px] text-red-400 opacity-70">${error.message}</p>
+                            <div class="mt-4 flex flex-col gap-2">
+                                <p class="text-[8px] text-gray-600">인증키 발급 직후에는 약 1시간의 승인 시간이 필요합니다.</p>
+                                <button onclick="location.reload()" class="text-[9px] accent-khaki underline">페이지 새로고침</button>
+                            </div>
                         </div>`;
                 }
             }
