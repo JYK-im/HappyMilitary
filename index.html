@@ -17,6 +17,39 @@
         ::-webkit-scrollbar-track { background: #121418; }
         ::-webkit-scrollbar-thumb { background: #2d333e; border-radius: 5px; }
     </style>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // Firebase 프로젝트 설정 (본인의 설정값으로 교체 필요)
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_MESSAGING_ID",
+        appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getFirestore();
+    const provider = new GoogleAuthProvider();
+
+    // 전역 상태에 할당
+    window.auth = auth;
+    window.db = db;
+    window.provider = provider;
+    window.signInWithPopup = signInWithPopup;
+    window.signOut = signOut;
+    window.doc = doc;
+    window.getDoc = getDoc;
+    window.setDoc = setDoc;
+    window.updateDoc = updateDoc;
+</script>
+
 </head>
 <body class="p-4 md:p-6">
 
@@ -38,7 +71,7 @@
                 <button onclick="alert('카카오 로그인 준비 중')" class="bg-[#FEE500] text-black text-[10px] px-3 py-1.5 rounded-full font-bold">카카오</button>
                 <button onclick="alert('네이버 로그인 준비 중')" class="bg-[#03C75A] text-white text-[10px] px-3 py-1.5 rounded-full font-bold">네이버</button>
             </div>
-            <button id="loginBtn" class="text-xs bg-white text-black px-5 py-2 rounded-full font-bold hover:bg-gray-200 transition-all">구글 로그인</button>
+            <button id="loginBtn" onclick="loginWithGoogle()" class="text-xs bg-white text-black px-5 py-2 rounded-full font-bold hover:bg-gray-200 transition-all">구글 로그인</button>
         </div>
     </header>
 
@@ -162,8 +195,80 @@
     </footer>
 
 <script>
-        // 1. 전역 변수
+
+// [로그인 및 유저 데이터 처리]
+        async function loginWithGoogle() {
+            try {
+                const result = await signInWithPopup(window.auth, window.provider);
+                const user = result.user;
+                
+                // Firestore에서 기존 유저 정보 확인
+                const userRef = doc(window.db, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+
+                if (!userSnap.exists()) {
+                    // 신규 회원: 추가 정보 입력 (성별, 생년월일 등)
+                    const birth = prompt("생년월일을 입력해주세요 (예: 19980520)");
+                    const gender = prompt("성별을 입력해주세요 (남/여)");
+                    
+                    const newUser = {
+                        uid: user.uid,
+                        name: user.displayName,
+                        email: user.email,
+                        nickname: user.displayName, // 기본 닉네임은 구글 이름
+                        birth: birth,
+                        gender: gender,
+                        is_nickname_changed: false, // 닉네임 수정 1회 제한용
+                        nickname_style: "color: #ffffff", // 기본 흰색
+                        role: "user"
+                    };
+                    
+                    await setDoc(userRef, newUser);
+                    currentUser = newUser;
+                } else {
+                    // 기존 회원
+                    currentUser = userSnap.data();
+                }
+                
+                updateAuthUI();
+                alert(`${currentUser.nickname}님, 환영합니다!`);
+            } catch (error) {
+                console.error("로그인 실패:", error);
+            }
+        }
+
+        // [닉네임 수정 기능 - 1회 제한]
+        async function changeNickname() {
+            if (currentUser.is_nickname_changed) {
+                alert("닉네임 변경 권한을 이미 사용하셨습니다. 추가 변경은 관리자에게 문의하세요.");
+                return;
+            }
+
+            const newName = prompt("새로운 닉네임을 입력하세요 (1회 한정)");
+            if (newName && newName.length >= 2) {
+                const userRef = doc(window.db, "users", currentUser.uid);
+                await updateDoc(userRef, {
+                    nickname: newName,
+                    is_nickname_changed: true
+                });
+                
+                currentUser.nickname = newName;
+                currentUser.is_nickname_changed = true;
+                updateAuthUI();
+                alert("닉네임이 성공적으로 변경되었습니다.");
+            }
+        }
+
+        // [로그아웃]
+        function handleLogout() {
+            signOut(window.auth).then(() => {
+                location.reload();
+            });
+        }
+
+// 1. 전역 변수 확장
         let allMarts = [];
+        let currentUser = null; // 현재 로그인한 사용자 정보 저장
 
 // 2. 마트 렌더링 함수 (XML 필드명 MART, LOC, TEL 대응)
         function renderMarts(marts) {
@@ -285,15 +390,26 @@
             });
         });
 
-        // 5. 채팅 기능 (기존 유지)
+// 5. 채팅 기능 (로그인 체크 추가)
         function sendChat() {
+            if (!currentUser) {
+                alert("로그인이 필요한 서비스입니다. 상단의 소셜 로그인을 이용해 주세요.");
+                return;
+            }
+            
             const input = document.getElementById('chatInput');
             if(!input.value) return;
+            
+            // 유저의 닉네임 스타일(색상/효과) 적용
+            const style = currentUser.nickname_style || "color: white";
+            const nickname = currentUser.nickname || "익명";
+
             const box = document.getElementById('msgBox');
             const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
             const msgHtml = `
-                <div class="flex flex-col items-end animate-fade-in">
+                <div class="flex flex-col items-end animate-fade-in mb-4">
+                    <span class="text-[9px] mb-1 font-bold" style="${style}">${nickname}</span>
                     <div class="bg-[#8a9a5b] text-black p-2.5 rounded-2xl rounded-tr-none max-w-[90%] font-medium">
                         ${input.value}
                     </div>
@@ -303,6 +419,56 @@
             box.insertAdjacentHTML('beforeend', msgHtml);
             input.value = "";
             box.scrollTop = box.scrollHeight;
+        }
+
+// 6. 회원 관리 시스템 로직
+        function handleLogin(platform) {
+            // 실제 구현시에는 각 플랫폼의 SDK(Firebase 등)를 호출합니다.
+            console.log(`${platform} 로그인 시도...`);
+            
+            // 가상의 로그인 성공 데이터 (DB에서 가져올 내용)
+            currentUser = {
+                uid: "user123",
+                name: "홍길동",
+                birth: "1998-05-20",
+                gender: "남",
+                nickname: "대한육군", 
+                is_nickname_changed: false, // 닉네임 변경 여부 체크
+                nickname_style: "color: #ffda44; text-shadow: 0 0 5px rgba(255,218,68,0.5);", // 관리자가 부여한 효과
+                role: "user" // 관리자는 "admin"
+            };
+
+            updateAuthUI();
+        }
+
+        // 로그인 성공 후 UI 변경
+        function updateAuthUI() {
+            const authArea = document.getElementById('authArea');
+            authArea.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="text-right hidden md:block">
+                        <p class="text-[10px] font-bold text-white" style="${currentUser.nickname_style}">${currentUser.nickname}</p>
+                        <p class="text-[8px] text-gray-500">${currentUser.name}님 환영합니다</p>
+                    </div>
+                    <button onclick="openProfileModal()" class="w-8 h-8 rounded-full bg-gray-700 border border-[#8a9a5b] flex items-center justify-center">
+                        <i class="fa-solid fa-user text-xs"></i>
+                    </button>
+                    <button onclick="location.reload()" class="text-[9px] text-gray-400 hover:text-white">로그아웃</button>
+                </div>
+            `;
+        }
+
+        // 닉네임 수정 함수 (1회 제한 적용)
+        function updateNickname(newNickname) {
+            if (currentUser.is_nickname_changed) {
+                alert("닉네임은 1회만 직접 수정할 수 있습니다. 추가 변경은 관리자에게 문의하세요.");
+                return;
+            }
+            
+            currentUser.nickname = newNickname;
+            currentUser.is_nickname_changed = true; // 변경 완료 표시
+            alert("닉네임이 변경되었습니다.");
+            updateAuthUI();
         }
 
         document.getElementById('chatInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChat(); });
