@@ -6,6 +6,176 @@
     <title>행군(행복한 군생활) | 군생활의 모든 정보</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700&display=swap');
+        body { font-family: 'Pretendard', sans-serif; background-color: #121418; color: #e1e1e1; overflow-x: hidden; }
+        .accent-khaki { color: #8a9a5b; } 
+        .bg-card { background-color: #1c1f26; border: 1px solid #2d333e; }
+        .btn-khaki { background-color: #8a9a5b; color: #121418; font-weight: bold; }
+        /* 스크롤바 커스텀 */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #121418; }
+        ::-webkit-scrollbar-thumb { background: #2d333e; border-radius: 5px; }
+    </style>
+</head>
+<body class="p-4 md:p-6">
+
+    <header class="max-w-7xl mx-auto flex justify-between items-center py-6 mb-8 border-b border-gray-800">
+        <div class="flex items-center gap-3">
+            <div class="bg-[#8a9a5b] p-2 rounded-lg shadow-lg shadow-khaki/20">
+                <i class="fa-solid fa-person-military-pointing text-black text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-black text-white tracking-tighter">
+                    <span class="accent-khaki text-[40px]">행</span>복한 
+                    <span class="accent-khaki text-[40px]">군</span>생활
+                </h1>
+                <p class="text-[10px] text-gray-500 font-bold tracking-widest uppercase italic leading-none mt-1">Happy Military Community</p>
+            </div>
+        </div>
+        <div id="authArea" class="flex items-center gap-3">
+            <div class="hidden md:flex gap-2">
+                <button onclick="alert('카카오 로그인 준비 중')" class="bg-[#FEE500] text-black text-[10px] px-3 py-1.5 rounded-full font-bold">카카오</button>
+                <button onclick="alert('네이버 로그인 준비 중')" class="bg-[#03C75A] text-white text-[10px] px-3 py-1.5 rounded-full font-bold">네이버</button>
+            </div>
+            <button id="loginBtn" class="text-xs bg-white text-black px-5 py-2 rounded-full font-bold hover:bg-gray-200 transition-all">구글 로그인</button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto grid grid-cols-1 xl:grid-cols-4 gap-6">
+        
+        <div class="xl:col-span-1 space-y-6">
+            <section class="bg-card p-5 rounded-2xl shadow-xl">
+                <h2 class="text-sm font-bold mb-4 accent-khaki flex items-center gap-2 border-b border-gray-800 pb-2">
+                    <i class="fa-solid fa-fire"></i> 실시간 인기글
+                </h2>
+                <div id="hotPosts" class="space-y-4 text-xs">
+                    <div class="group cursor-pointer">
+                        <p class="font-bold truncate group-hover:text-[#8a9a5b]">2026년 군인 월급 지급일 및 인상분 정리</p>
+                        <span class="text-[10px] text-gray-600">댓글 32개 · 10분 전</span>
+                    </div>
+                    <div class="group cursor-pointer">
+                        <p class="font-bold truncate group-hover:text-[#8a9a5b]">영외마트(WA) 가족 등록 절차 알려드립니다</p>
+                        <span class="text-[10px] text-gray-600">댓글 18개 · 25분 전</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <a href="https://blog.naver.com" target="_blank" class="block bg-card p-4 rounded-xl border border-gray-800 hover:border-[#8a9a5b] transition-all group">
+                    <p class="text-[10px] accent-khaki font-bold mb-1">행군 공식 블로그</p>
+                    <p class="font-bold text-sm group-hover:underline text-white">군인가족 혜택 가이드 보기</p>
+                </a>
+                <a href="https://www.welfare.mil.kr/kukinfo/board/board.do?forwardName=kukinfo.board.list&be_id=h_package&ssv=bm_title&sm=OR&kw=&ct=0&cateCd1=0&area_cd1=" class="block bg-[#8a9a5b] p-4 rounded-xl text-black transition-transform hover:scale-[1.02]">
+                    <p class="text-[10px] font-bold opacity-80">추천 서비스</p>
+                    <p class="font-bold text-sm">국방복지단 혜택 확인</p>
+                </a>
+            </section>
+        </div>
+
+        <div class="xl:col-span-2 space-y-6">
+            
+            <section class="bg-card p-6 rounded-2xl shadow-lg border-b border-[#8a9a5b]/30">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-thumbtack accent-khaki"></i> 주요 정보 업데이트
+                    </h2>
+                    <button class="text-[10px] text-gray-500 hover:text-white transition-colors">전체보기 +</button>
+                </div>
+                
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="group cursor-pointer p-4 bg-black/20 rounded-xl border border-gray-800 hover:border-[#8a9a5b] transition-all">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-[9px] bg-[#8a9a5b] text-black px-2 py-0.5 rounded font-bold uppercase tracking-tighter">초급간부</span>
+                            <span class="text-[10px] text-gray-600 font-medium">2026.01.05</span>
+                        </div>
+                        <h3 class="font-bold text-sm group-hover:text-[#8a9a5b] mb-1">2026년 초급간부 당직근무비 인상 확정 및 지급 시기 안내</h3>
+                        <p class="text-[11px] text-gray-500 line-clamp-1 leading-relaxed">올해부터 평일 2만원, 주말 4만원으로 인상된 당직비가 1월 급여부터 소급 적용됩니다.</p>
+                    </div>
+
+                    <div class="group cursor-pointer p-4 bg-black/20 rounded-xl border border-gray-800 hover:border-[#8a9a5b] transition-all">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-[9px] bg-blue-600 text-white px-2 py-0.5 rounded font-bold uppercase tracking-tighter">군인가족</span>
+                            <span class="text-[10px] text-gray-600 font-medium">2026.01.03</span>
+                        </div>
+                        <h3 class="font-bold text-sm group-hover:text-[#8a9a5b] mb-1">군인 자녀 교육지원금 및 호국장학금 신청 서류 안내</h3>
+                        <p class="text-[11px] text-gray-500 line-clamp-1 leading-relaxed">자녀 장학금 신청을 위한 복무확인서 및 성적 증명서 제출 기한을 확인하세요.</p>
+                    </div>
+                </div>
+            </section>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <section class="bg-card p-6 rounded-2xl shadow-xl border-b border-[#8a9a5b]/30">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                        <h3 class="text-xl font-bold flex items-center gap-2">
+                            <i class="fa-solid fa-cart-shopping accent-khaki"></i> 영외마트(WA) 현황
+                        </h3>
+                        <div class="relative w-full md:w-40">
+                            <input type="text" id="waSearch" placeholder="지역명 검색" 
+                                class="w-full bg-black/50 border border-gray-700 px-3 py-1.5 rounded-xl text-[10px] focus:border-[#8a9a5b] outline-none">
+                        </div>
+                    </div>
+                    <div id="waList" class="grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto pr-2">
+                        <p class="text-center py-10 text-gray-600 animate-pulse text-[10px]">정보 동기화 중...</p>
+                    </div>
+                </section>
+
+                <section class="bg-card p-5 rounded-2xl h-fit min-h-[300px]">
+    <h3 class="text-sm font-bold mb-4 flex items-center gap-2 border-b border-gray-800 pb-2">
+        <i class="fa-solid fa-house-user accent-khaki"></i> 군 특별공급 공고
+    </h3>
+    <ul id="aptNoticeList" class="text-[11px] space-y-3">
+        <li class="text-center py-4 text-gray-600 animate-pulse">최신 공고 불러오는 중...</li>
+    </ul>
+    <div class="mt-4 pt-2 border-t border-gray-800 text-center">
+        <a href="https://www.welfare.mil.kr/board/board.do?m_code=1179&be_id=c_apt" target="_blank" class="text-[10px] text-gray-500 hover:text-white underline">
+            국군복지포털에서 더보기
+        </a>
+    </div>
+</section>
+            </div>
+        </div>
+
+        <div class="xl:col-span-1">
+            <section class="bg-card p-5 rounded-2xl h-[650px] flex flex-col shadow-2xl relative overflow-hidden">
+    <h2 class="text-sm font-bold mb-4 accent-khaki border-b border-gray-800 pb-2 uppercase tracking-widest flex items-center gap-2">
+        <i class="fa-solid fa-comments text-[10px]"></i> Live Talk
+    </h2>
+
+    <div id="chatBlindOverlay" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#121418]/90 backdrop-blur-md transition-opacity duration-500">
+        <i class="fa-solid fa-lock text-3xl mb-4 text-[#8a9a5b]"></i>
+        <p class="text-xs font-bold text-white mb-2">로그인이 필요합니다</p>
+        <p class="text-[11px] text-gray-500 mb-5 text-center px-6">행군 커뮤니티 대화에 참여하려면<br>구글 계정으로 로그인해 주세요.</p>
+        <button onclick="handleLogin()" class="btn-khaki px-6 py-2 rounded-full text-[11px] hover:scale-105 transition-transform">
+            구글 로그인
+        </button>
+    </div>
+
+    <div id="chatContentArea" class="flex-1 flex flex-col opacity-20 pointer-events-none select-none">
+        <div id="msgBox" class="flex-1 overflow-y-auto space-y-4 mb-4 pr-1 text-[11px]">
+            <div class="bg-black/30 p-3 rounded-xl border border-gray-800 text-center">
+                <p class="text-gray-500 text-[10px]">보안 규정을 준수해 주세요 🪖</p>
+            </div>
+        </div>
+        <div class="mt-auto">
+            <div class="flex gap-2">
+                <input type="text" id="chatInput" placeholder="매너 채팅 부탁드립니다." 
+                    class="flex-1 bg-black border border-gray-700 p-2.5 rounded-xl text-xs outline-none" disabled>
+                <button onclick="sendChat()" class="btn-khaki px-4 rounded-xl opacity-50" disabled>
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+        </div>
+    </main>
+
+    <footer class="max-w-7xl mx-auto mt-12 py-8 border-t border-gray-800 text-center text-gray-600 text-[10px]">
+        <p>© 2026 행군(Happy Military). All Rights Reserved.</p>
+        <p class="mt-1 font-bold">본 사이트는 군사보안 규정을 준수하며, 보안 위배 게시물은 즉시 삭제됩니다.</p>
+    </footer>
+
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -26,7 +196,31 @@
         firebase.initializeApp(firebaseConfig);
     }
     const db = firebase.database();
+    let currentUser = null; 
     let allMarts = [];
+
+function handleLogin() {
+        // 실제 구글 로그인 연동 전까지는 클릭 시 즉시 해제되도록 구성
+        currentUser = { name: "익명의 전우" }; 
+        
+        // 1. 오버레이 숨기기
+        const overlay = document.getElementById('chatBlindOverlay');
+        overlay.classList.add('opacity-0');
+        setTimeout(() => overlay.classList.add('hidden'), 500);
+
+        // 2. 채팅창 활성화
+        const chatArea = document.getElementById('chatContentArea');
+        chatArea.classList.remove('opacity-20', 'pointer-events-none', 'select-none');
+        
+        const input = document.getElementById('chatInput');
+        input.disabled = false;
+        input.placeholder = "메시지를 입력하세요...";
+
+        // 3. 상단 로그인 버튼 변경
+        document.getElementById('loginBtn').innerText = "로그아웃";
+        console.log("로그인 성공: 채팅창이 활성화되었습니다.");
+    }
+
 
     // 3. 마트 데이터 로드 (캐시 우선 방식)
     async function loadMartData() {
@@ -119,326 +313,112 @@
         }).join('');
     }
 
-    // 6. 페이지 초기화 및 검색 이벤트
-    document.addEventListener('DOMContentLoaded', () => {
-        loadMartData();
+// 4. 특별공급 공고 로드 함수 (JSON 데이터 추출 방식 적용)
+async function loadAptNotices() {
+    const listContainer = document.getElementById('aptNoticeList');
+    const targetUrl = "https://www.welfare.mil.kr/board/board.do?m_code=1179&be_id=c_apt";
+    // 타임스탬프를 추가하여 캐시된 실패 결과가 아닌 새 데이터를 강제 요청합니다.
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&_=${Date.now()}`;
 
-        const searchInput = document.getElementById('waSearch');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                const keyword = e.target.value.toLowerCase();
-                const filtered = allMarts.filter(m => 
-                    m.MART.toLowerCase().includes(keyword) || m.LOC.toLowerCase().includes(keyword)
-                );
-                renderMarts(filtered);
+    try {
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error('네트워크 응답 에러');
+        
+        const data = await response.json(); 
+        if (!data || !data.contents) throw new Error('데이터 응답 비어있음');
+        
+        const htmlText = data.contents; 
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlText, "text/html");
+        
+        // 국군복지포털 게시판의 행(tr)을 더 포괄적으로 선택합니다.
+        const rows = doc.querySelectorAll("table tr");
+        let noticeHtml = "";
+        let foundCount = 0;
+
+        if (rows && rows.length > 0) {
+            rows.forEach((row) => {
+                // 상위 5개만 가져오며, 제목이 있는 칸만 골라냅니다.
+                const link = row.querySelector("a");
+                if (link && foundCount < 5) {
+                    const title = link.innerText.trim();
+                    // 공지사항이나 유효한 제목인 경우 (보통 5자 이상)
+                    if (title.length > 5 && !title.includes("자바스크립트")) {
+                        // 날짜는 해당 행의 마지막에서 2~3번째 td에 위치하는 경우가 많습니다.
+                        const tds = row.querySelectorAll("td");
+                        const date = tds.length > 2 ? tds[tds.length - 2].innerText.trim() : "";
+
+                        noticeHtml += `
+                            <li class="group border-b border-gray-800/50 pb-2 last:border-0">
+                                <a href="${targetUrl}" target="_blank" class="block group-hover:text-[#8a9a5b] transition-colors">
+                                    <p class="truncate leading-tight text-white/90 font-medium">• ${title}</p>
+                                    <div class="flex justify-between items-center mt-1">
+                                        <span class="text-[9px] text-gray-500 italic">${date}</span>
+                                        <span class="text-[8px] accent-khaki opacity-0 group-hover:opacity-100 transition-opacity">자세히 보기 ></span>
+                                    </div>
+                                </a>
+                            </li>`;
+                        foundCount++;
+                    }
+                }
             });
-        }
-    });
-
-    // 1분마다 영업 상태 업데이트
-    setInterval(() => { if(allMarts.length > 0) renderMarts(allMarts); }, 60000);
-</script>    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700&display=swap');
-        body { font-family: 'Pretendard', sans-serif; background-color: #121418; color: #e1e1e1; overflow-x: hidden; }
-        .accent-khaki { color: #8a9a5b; } 
-        .bg-card { background-color: #1c1f26; border: 1px solid #2d333e; }
-        .btn-khaki { background-color: #8a9a5b; color: #121418; font-weight: bold; }
-        /* 스크롤바 커스텀 */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #121418; }
-        ::-webkit-scrollbar-thumb { background: #2d333e; border-radius: 5px; }
-    </style>
-</head>
-<body class="p-4 md:p-6">
-
-    <header class="max-w-7xl mx-auto flex justify-between items-center py-6 mb-8 border-b border-gray-800">
-        <div class="flex items-center gap-3">
-            <div class="bg-[#8a9a5b] p-2 rounded-lg shadow-lg shadow-khaki/20">
-                <i class="fa-solid fa-person-military-pointing text-black text-2xl"></i>
-            </div>
-            <div>
-                <h1 class="text-3xl font-black text-white tracking-tighter">
-                    <span class="accent-khaki text-[40px]">행</span>복한 
-                    <span class="accent-khaki text-[40px]">군</span>생활
-                </h1>
-                <p class="text-[10px] text-gray-500 font-bold tracking-widest uppercase italic leading-none mt-1">Happy Military Community</p>
-            </div>
-        </div>
-        <div id="authArea" class="flex items-center gap-3">
-            <div class="hidden md:flex gap-2">
-                <button onclick="alert('카카오 로그인 준비 중')" class="bg-[#FEE500] text-black text-[10px] px-3 py-1.5 rounded-full font-bold">카카오</button>
-                <button onclick="alert('네이버 로그인 준비 중')" class="bg-[#03C75A] text-white text-[10px] px-3 py-1.5 rounded-full font-bold">네이버</button>
-            </div>
-            <button id="loginBtn" class="text-xs bg-white text-black px-5 py-2 rounded-full font-bold hover:bg-gray-200 transition-all">구글 로그인</button>
-        </div>
-    </header>
-
-    <main class="max-w-7xl mx-auto grid grid-cols-1 xl:grid-cols-4 gap-6">
-        
-        <div class="xl:col-span-1 space-y-6">
-            <section class="bg-card p-5 rounded-2xl shadow-xl">
-                <h2 class="text-sm font-bold mb-4 accent-khaki flex items-center gap-2 border-b border-gray-800 pb-2">
-                    <i class="fa-solid fa-fire"></i> 실시간 인기글
-                </h2>
-                <div id="hotPosts" class="space-y-4 text-xs">
-                    <div class="group cursor-pointer">
-                        <p class="font-bold truncate group-hover:text-[#8a9a5b]">2026년 군인 월급 지급일 및 인상분 정리</p>
-                        <span class="text-[10px] text-gray-600">댓글 32개 · 10분 전</span>
-                    </div>
-                    <div class="group cursor-pointer">
-                        <p class="font-bold truncate group-hover:text-[#8a9a5b]">영외마트(WA) 가족 등록 절차 알려드립니다</p>
-                        <span class="text-[10px] text-gray-600">댓글 18개 · 25분 전</span>
-                    </div>
-                </div>
-            </section>
-
-            <section class="space-y-3">
-                <a href="https://blog.naver.com" target="_blank" class="block bg-card p-4 rounded-xl border border-gray-800 hover:border-[#8a9a5b] transition-all group">
-                    <p class="text-[10px] accent-khaki font-bold mb-1">행군 공식 블로그</p>
-                    <p class="font-bold text-sm group-hover:underline text-white">군인가족 혜택 가이드 보기 →</p>
-                </a>
-                <a href="#" class="block bg-[#8a9a5b] p-4 rounded-xl text-black transition-transform hover:scale-[1.02]">
-                    <p class="text-[10px] font-bold opacity-80">추천 서비스</p>
-                    <p class="font-bold text-sm">국방복지포털 혜택 확인</p>
-                </a>
-            </section>
-        </div>
-
-        <div class="xl:col-span-2 space-y-6">
             
-            <section class="bg-card p-6 rounded-2xl shadow-lg border-b border-[#8a9a5b]/30">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold flex items-center gap-2">
-                        <i class="fa-solid fa-thumbtack accent-khaki"></i> 주요 정보 업데이트
-                    </h2>
-                    <button class="text-[10px] text-gray-500 hover:text-white transition-colors">전체보기 +</button>
-                </div>
-                
-                <div class="grid grid-cols-1 gap-4">
-                    <div class="group cursor-pointer p-4 bg-black/20 rounded-xl border border-gray-800 hover:border-[#8a9a5b] transition-all">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-[9px] bg-[#8a9a5b] text-black px-2 py-0.5 rounded font-bold uppercase tracking-tighter">초급간부</span>
-                            <span class="text-[10px] text-gray-600 font-medium">2026.01.05</span>
-                        </div>
-                        <h3 class="font-bold text-sm group-hover:text-[#8a9a5b] mb-1">2026년 초급간부 당직근무비 인상 확정 및 지급 시기 안내</h3>
-                        <p class="text-[11px] text-gray-500 line-clamp-1 leading-relaxed">올해부터 평일 2만원, 주말 4만원으로 인상된 당직비가 1월 급여부터 소급 적용됩니다.</p>
-                    </div>
-
-                    <div class="group cursor-pointer p-4 bg-black/20 rounded-xl border border-gray-800 hover:border-[#8a9a5b] transition-all">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-[9px] bg-blue-600 text-white px-2 py-0.5 rounded font-bold uppercase tracking-tighter">군인가족</span>
-                            <span class="text-[10px] text-gray-600 font-medium">2026.01.03</span>
-                        </div>
-                        <h3 class="font-bold text-sm group-hover:text-[#8a9a5b] mb-1">군인 자녀 교육지원금 및 호국장학금 신청 서류 안내</h3>
-                        <p class="text-[11px] text-gray-500 line-clamp-1 leading-relaxed">자녀 장학금 신청을 위한 복무확인서 및 성적 증명서 제출 기한을 확인하세요.</p>
-                    </div>
-                </div>
-            </section>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <section class="bg-card p-6 rounded-2xl shadow-xl border-b border-[#8a9a5b]/30">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                        <h3 class="text-xl font-bold flex items-center gap-2">
-                            <i class="fa-solid fa-cart-shopping accent-khaki"></i> 영외마트(WA) 현황
-                        </h3>
-                        <div class="relative w-full md:w-40">
-                            <input type="text" id="waSearch" placeholder="지역명 검색" 
-                                class="w-full bg-black/50 border border-gray-700 px-3 py-1.5 rounded-xl text-[10px] focus:border-[#8a9a5b] outline-none">
-                        </div>
-                    </div>
-                    <div id="waList" class="grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto pr-2">
-                        <p class="text-center py-10 text-gray-600 animate-pulse text-[10px]">정보 동기화 중...</p>
-                    </div>
-                </section>
-
-                <section class="bg-card p-5 rounded-2xl">
-                    <h3 class="text-sm font-bold mb-4 flex items-center gap-2 border-b border-gray-800 pb-2">
-                        <i class="fa-solid fa-house-user accent-khaki"></i> 군 특별공급 공고
-                    </h3>
-                    <ul class="text-[11px] space-y-3">
-                        <li class="truncate text-gray-400 hover:text-[#8a9a5b] cursor-pointer leading-relaxed">• [공고] 파주 운정 3지구 A-44 군특공</li>
-                        <li class="truncate text-gray-400 hover:text-[#8a9a5b] cursor-pointer leading-relaxed">• [공고] 화성 동탄2 A-94블록 특별공급</li>
-                        <li class="truncate text-gray-400 hover:text-[#8a9a5b] cursor-pointer leading-relaxed">• [안내] 26년 1분기 경기지역 예정공고</li>
-                    </ul>
-                </section>
-            </div>
-        </div>
-
-        <div class="xl:col-span-1">
-            <section class="bg-card p-5 rounded-2xl h-[650px] flex flex-col shadow-2xl relative">
-                <h2 class="text-sm font-bold mb-4 accent-khaki border-b border-gray-800 pb-2 uppercase tracking-widest flex items-center gap-2">
-                    <i class="fa-solid fa-comments text-[10px]"></i> Live Talk
-                </h2>
-                <div id="msgBox" class="flex-1 overflow-y-auto space-y-4 mb-4 pr-1 text-[11px]">
-                    <div class="bg-black/30 p-3 rounded-xl border border-gray-800 text-center">
-                        <p class="text-gray-500 text-[10px]">보안 규정을 준수해 주세요 🪖</p>
-                    </div>
-                </div>
-                <div class="mt-auto">
-                    <div class="flex gap-2">
-                        <input type="text" id="chatInput" placeholder="매너 채팅 부탁드립니다." 
-                            class="flex-1 bg-black border border-gray-700 p-2.5 rounded-xl text-xs outline-none focus:border-[#8a9a5b] transition-all">
-                        <button onclick="sendChat()" class="btn-khaki px-4 rounded-xl hover:bg-[#a6b67d] transition-colors">
-                            <i class="fa-solid fa-paper-plane"></i>
-                        </button>
-                    </div>
-                </div>
-            </section>
-        </div>
-    </main>
-
-    <footer class="max-w-7xl mx-auto mt-12 py-8 border-t border-gray-800 text-center text-gray-600 text-[10px]">
-        <p>© 2026 행군(Happy Military). All Rights Reserved.</p>
-        <p class="mt-1 font-bold">본 사이트는 군사보안 규정을 준수하며, 보안 위배 게시물은 즉시 삭제됩니다.</p>
-    </footer>
-
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-
-<script>
-    // 2. Firebase 설정 (중복 제거)
-    const firebaseConfig = {
-        apiKey: "AIzaSyDaNMdpDXgiuELEO65Wk0PazVT2yeQeags",
-        authDomain: "dividend-b090d.firebaseapp.com",
-        projectId: "dividend-b090d",
-        storageBucket: "dividend-b090d.appspot.com",
-        messagingSenderId: "543720180150",
-        appId: "1:543720180150:web:15073a1e9706bb1f949917",
-        databaseURL: "https://dividend-b090d-default-rtdb.firebaseio.com" 
-    };
-
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
-    const db = firebase.database();
-    let allMarts = [];
-
-    // 3. 데이터 로드 및 캐싱 로직
-    async function loadMartData() {
-        const listContainer = document.getElementById('waList');
-        try {
-            const snapshot = await db.ref('marts_cache').once('value');
-            const cachedData = snapshot.val();
-
-            // 1시간(3600000ms) 이내 데이터면 즉시 사용
-            if (cachedData && (Date.now() - cachedData.lastUpdated < 3600000)) {
-                allMarts = cachedData.rows;
-                renderMartsFromJSON(allMarts);
+            if (foundCount > 0) {
+                listContainer.innerHTML = noticeHtml;
             } else {
-                await fetchAndCacheMarts();
+                throw new Error("유효한 게시글을 찾지 못함");
             }
-        } catch (error) {
-            console.error("Cache Load Error:", error);
-            fetchAndCacheMarts(); 
+        } else {
+            throw new Error("테이블 구조 없음");
         }
+    } catch (error) {
+        console.warn("공고 로딩 실패:", error.message);
+        // 실패 시 무한 로딩 표시 대신 버튼을 즉시 노출하여 사용자 불편 최소화
+        listContainer.innerHTML = `
+            <li class="py-4 text-center">
+                <p class="text-[10px] text-gray-500 mb-3 leading-relaxed">복지포털 서버 응답이 지연되고 있습니다.</p>
+                <a href="${targetUrl}" target="_blank" class="btn-khaki px-5 py-2 rounded-full text-[10px] inline-block shadow-lg hover:scale-105 transition-transform">
+                    실시간 공고 확인하기
+                </a>
+            </li>`;
     }
-
-    async function fetchAndCacheMarts() {
-        const myKey = "3231313637393730303336333832313035";
-        const apiUrl = `https://openapi.mnd.go.kr/${myKey}/xml/TB_MND_MART_CURRENT/1/999/`;
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
-
-        try {
-            const response = await fetch(proxyUrl);
-            const xmlText = await response.text();
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-            const rows = Array.from(xmlDoc.querySelectorAll('row'));
-
-            if (rows.length > 0) {
-                const martJson = rows.map(row => ({
-                    MART: row.querySelector('MART')?.textContent,
-                    LOC: row.querySelector('LOC')?.textContent,
-                    TEL: row.querySelector('TEL')?.textContent
-                }));
-
-                await db.ref('marts_cache').set({
-                    lastUpdated: Date.now(),
-                    rows: martJson
-                });
-
-                allMarts = martJson;
-                renderMartsFromJSON(allMarts);
-            }
-        } catch (e) {
-            console.error("API Fetch Error:", e);
-        }
-    }
-
-    function renderMartsFromJSON(marts) {
-        const listContainer = document.getElementById('waList');
-        if (!listContainer) return;
-        
-        const now = new Date();
-        const curTime = now.getHours() * 100 + now.getMinutes();
-        const day = now.getDay();
-
-        listContainer.innerHTML = marts.map(mart => {
-            let status = { text: "운영 종료", color: "text-red-500", dot: "bg-red-500" };
-            let isHoliday = (day === 0);
-            let openTime = 900, closeTime = (day === 6) ? 1500 : 1800;
-
-            if (!isHoliday && curTime >= openTime && curTime < closeTime) {
-                status = (curTime >= 1200 && curTime < 1300) 
-                    ? { text: "점심 시간", color: "text-yellow-500", dot: "bg-yellow-500" }
-                    : { text: "운영 중", color: "text-green-500", dot: "bg-green-500 animate-pulse" };
-            }
-
-            return `
-                <div class="flex flex-col p-3 bg-black/20 rounded-xl border border-gray-800 hover:border-[#8a9a5b]/50 transition-all">
-                    <div class="flex justify-between items-start mb-1">
-                        <h4 class="text-[12px] font-bold text-white">${mart.MART}</h4>
-                        <span class="flex items-center gap-1 text-[9px] font-bold ${status.color}">
-                            <span class="w-1.5 h-1.5 rounded-full ${status.dot}"></span>${status.text}
-                        </span>
-                    </div>
-                    <p class="text-[9px] text-gray-500 truncate mb-2">${mart.LOC}</p>
-                    <div class="flex justify-between items-center text-[9px]">
-                         <span class="text-gray-600 font-mono">Tel: ${mart.TEL || '정보없음'}</span>
-                         ${mart.TEL ? `<a href="tel:${mart.TEL}" class="accent-khaki font-bold">전화하기</a>` : ''}
-                    </div>
-                </div>`;
-        }).join('');
-    }
-
-    // 4. 초기화 및 이벤트 리스너
-    document.addEventListener('DOMContentLoaded', () => {
-        loadMartData();
-        
-        // 검색 기능 연결
-        document.getElementById('waSearch')?.addEventListener('input', (e) => {
-            const val = e.target.value.toLowerCase();
-            const filtered = allMarts.filter(m => m.MART.toLowerCase().includes(val) || m.LOC.toLowerCase().includes(val));
-            renderMartsFromJSON(filtered);
-        });
+}
+// 5. 페이지 초기화 및 검색 이벤트 (함수 호출 보장)
+document.addEventListener('DOMContentLoaded', () => {
+    loadMartData();   // 영외마트 로드
+    loadAptNotices(); // 특별공급 로드
+    
+    // 검색 기능: renderMarts(allMarts) 호출
+    document.getElementById('waSearch')?.addEventListener('input', (e) => {
+        const val = e.target.value.toLowerCase();
+        const filtered = allMarts.filter(m => m.MART.toLowerCase().includes(val) || m.LOC.toLowerCase().includes(val));
+        renderMarts(filtered);
     });
+});
 
-    // 1분마다 상태 업데이트 (함수명 수정됨)
-    setInterval(() => { if(allMarts.length > 0) renderMartsFromJSON(allMarts); }, 60000);
+// 실시간 업데이트 (1분마다)
+setInterval(() => { if(allMarts.length > 0) renderMarts(allMarts); }, 60000);
 
-
-        // 5. 채팅 기능 (기존 유지)
-        function sendChat() {
-            const input = document.getElementById('chatInput');
-            if(!input.value) return;
-            const box = document.getElementById('msgBox');
-            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            const msgHtml = `
-                <div class="flex flex-col items-end animate-fade-in">
-                    <div class="bg-[#8a9a5b] text-black p-2.5 rounded-2xl rounded-tr-none max-w-[90%] font-medium">
-                        ${input.value}
-                    </div>
-                    <span class="text-[8px] text-gray-600 mt-1">${time}</span>
-                </div>
-            `;
-            box.insertAdjacentHTML('beforeend', msgHtml);
-            input.value = "";
-            box.scrollTop = box.scrollHeight;
-        }
-
-        document.getElementById('chatInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChat(); });
-        setInterval(() => { if(allMarts.length > 0) renderMarts(allMarts); }, 60000);
-    </script>
+// 6. 채팅 기능 (기존 유지)
+function sendChat() {
+    if (!currentUser) return;
+    const input = document.getElementById('chatInput');
+    if(!input.value.trim()) return;
+    const box = document.getElementById('msgBox');
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    const msgHtml = `
+        <div class="flex flex-col items-end animate-fade-in">
+            <div class="bg-[#8a9a5b] text-black p-2.5 rounded-2xl rounded-tr-none max-w-[90%] font-medium shadow-lg">
+                ${input.value}
+            </div>
+            <span class="text-[8px] text-gray-600 mt-1">${time}</span>
+        </div>
+    `;
+    box.insertAdjacentHTML('beforeend', msgHtml);
+    input.value = "";
+    box.scrollTop = box.scrollHeight;
+}
+</script>
 </body>
 </html>
