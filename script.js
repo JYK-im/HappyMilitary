@@ -318,6 +318,12 @@ document.addEventListener('DOMContentLoaded', () => {
     loadMartData();   // 영외마트 로드
     loadAptNotices(); // 특별공급 로드
     loadBlogUpdates(); // 블로그 로드
+    listenForChats(); // 채팅 리스너 시작
+
+document.getElementById('chatInput')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendChat();
+    });
+});
     
     // 검색 기능: renderMarts(allMarts) 호출
 document.getElementById('waSearch')?.addEventListener('input', (e) => {
@@ -330,26 +336,73 @@ document.getElementById('waSearch')?.addEventListener('input', (e) => {
 // 실시간 업데이트 (1분마다)
 setInterval(() => { if(allMarts.length > 0) renderMarts(allMarts); }, 60000);
 
-// 6. 채팅 기능 (기존 유지)
-function sendChat() {
-    if (!currentUser) return;
-    const input = document.getElementById('chatInput');
-    if(!input.value.trim()) return;
+// [채팅 기능 고도화]
+
+// 1. 실시간 메시지 수신 리스너 (페이지 로드 시 자동 실행)
+function listenForChats() {
+    const chatRef = db.ref('chats');
+    // 최신 50개 메시지만 가져오기
+    chatRef.limitToLast(50).on('child_added', (snapshot) => {
+        const data = snapshot.val();
+        renderMessage(data);
+    });
+}
+
+// 2. 메시지 화면 렌더링 함수
+function renderMessage(data) {
     const box = document.getElementById('msgBox');
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (!box) return;
+
+    // 내가 보낸 메시지인지 확인
+    const isMine = currentUser && data.uid === currentUser.uid;
     
     const msgHtml = `
-        <div class="flex flex-col items-end animate-fade-in">
-            <div class="bg-[#8a9a5b] text-black p-2.5 rounded-2xl rounded-tr-none max-w-[90%] font-medium shadow-lg">
-                ${input.value}
+        <div class="flex flex-col ${isMine ? 'items-end' : 'items-start'} animate-fade-in mb-2">
+            ${!isMine ? `<span class="text-[9px] text-gray-500 mb-1 ml-1">${data.userName}</span>` : ''}
+            <div class="${isMine ? 'bg-[#8a9a5b] text-black rounded-tr-none' : 'bg-gray-800 text-white rounded-tl-none'} p-2.5 rounded-2xl max-w-[85%] font-medium shadow-md">
+                <p class="text-[11px] leading-relaxed break-all">${data.message}</p>
             </div>
-            <span class="text-[8px] text-gray-600 mt-1">${time}</span>
+            <span class="text-[8px] text-gray-600 mt-1">${data.time}</span>
         </div>
     `;
+    
     box.insertAdjacentHTML('beforeend', msgHtml);
-    input.value = "";
-    box.scrollTop = box.scrollHeight;
+    box.scrollTop = box.scrollHeight; // 새 메시지 오면 자동 스크롤
 }
+
+// 3. 메시지 전송 함수 (수정)
+function sendChat() {
+    if (!currentUser) {
+        alert("로그인이 필요합니다.");
+        return;
+    }
+
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+
+    if (!message) return;
+
+    const chatRef = db.ref('chats');
+    const newChatRef = chatRef.push(); // 고유 ID 생성
+
+    const chatData = {
+        uid: currentUser.uid,
+        userName: currentUser.displayName || "익명",
+        message: message,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    };
+
+    newChatRef.set(chatData)
+        .then(() => {
+            input.value = ""; // 입력창 비우기
+        })
+        .catch((error) => {
+            console.error("전송 실패:", error);
+            alert("메시지 전송에 실패했습니다.");
+        });
+}
+
 
 
 // 블로그 최신글 로드 함수
@@ -421,4 +474,3 @@ function formatTimeAgo(date) {
     if (diff < 1440) return `${Math.floor(diff / 60)}시간 전`;
     return `${Math.floor(diff / 1440)}일 전`;
 }
-
