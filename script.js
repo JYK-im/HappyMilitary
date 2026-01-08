@@ -317,11 +317,10 @@ async function loadAptNotices() {
 document.addEventListener('DOMContentLoaded', () => {
     loadMartData();   // 영외마트 로드
     loadAptNotices(); // 특별공급 로드
-    loadBlogPosts();
     loadBlogUpdates(); // 블로그 로드
     
     // 검색 기능: renderMarts(allMarts) 호출
-    document.getElementById('waSearch')?.addEventListener('input', (e) => {
+document.getElementById('waSearch')?.addEventListener('input', (e) => {
         const val = e.target.value.toLowerCase();
         const filtered = allMarts.filter(m => m.MART.toLowerCase().includes(val) || m.LOC.toLowerCase().includes(val));
         renderMarts(filtered);
