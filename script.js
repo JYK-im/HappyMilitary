@@ -52,6 +52,10 @@ const firebaseConfig = {
 const auth = firebase.auth();
 const provider = new firebase.auth.GoogleAuthProvider();
 
+provider.setCustomParameters({
+  prompt: 'select_account'
+});
+
 // 2. 로그인 버튼 클릭 시 실행될 함수
 function handleLogin() {
     auth.signInWithPopup(provider)
@@ -344,3 +348,4 @@ function sendChat() {
     input.value = "";
     box.scrollTop = box.scrollHeight;
 }
+
