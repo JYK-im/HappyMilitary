@@ -47,22 +47,31 @@ function updateThemeIcon(isLight) {
     let currentUser = null; 
     let allMarts = [];
 
-// Firebase Auth 객체 가져오기
+// 1. Auth 인스턴스 초기화
 const auth = firebase.auth();
 const provider = new firebase.auth.GoogleAuthProvider();
 
-// 로그인 함수 수정
+// 2. 로그인 버튼 클릭 시 실행될 함수
 function handleLogin() {
     auth.signInWithPopup(provider)
         .then((result) => {
-            // 로그인 성공 시 실행
+            // 로그인 성공 시 사용자 정보를 가져옴
             currentUser = result.user;
-            updateUI(currentUser);
+            
+            // UI 업데이트 (채팅창 활성화 등)
+            const overlay = document.getElementById('chatBlindOverlay');
+            overlay.classList.add('opacity-0');
+            setTimeout(() => overlay.classList.add('hidden'), 500);
+
+            const chatArea = document.getElementById('chatContentArea');
+            chatArea.classList.remove('opacity-20', 'pointer-events-none', 'select-none');
+            
+            document.getElementById('loginBtn').innerText = "로그아웃";
             console.log("로그인 성공:", currentUser.displayName);
         })
         .catch((error) => {
             console.error("로그인 실패:", error.message);
-            alert("로그인에 실패했습니다.");
+            alert("로그인 도중 문제가 발생했습니다.");
         });
 }
 
