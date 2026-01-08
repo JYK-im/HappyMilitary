@@ -317,7 +317,8 @@ async function loadAptNotices() {
 document.addEventListener('DOMContentLoaded', () => {
     loadMartData();   // 영외마트 로드
     loadAptNotices(); // 특별공급 로드
-    loadBlogPosts(); // 블로그 로드
+    loadBlogPosts();
+    loadBlogUpdates(); // 블로그 로드
     
     // 검색 기능: renderMarts(allMarts) 호출
     document.getElementById('waSearch')?.addEventListener('input', (e) => {
@@ -353,11 +354,10 @@ function sendChat() {
 
 
 // 블로그 최신글 로드 함수
-async function loadBlogPosts() {
+async function loadBlogUpdates() {
     const blogRssUrl = "https://rss.blog.naver.com/stream_deck";
-    // allorigins 프록시 사용 시 캐시를 피하기 위해 타임스탬프 추가
     const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(blogRssUrl)}&_=${Date.now()}`;
-    const hotPostsContainer = document.getElementById('hotPosts');
+    const container = document.getElementById('blogUpdateList');
 
     try {
         const response = await fetch(proxyUrl);
@@ -365,29 +365,40 @@ async function loadBlogPosts() {
         
         const data = await response.json();
         const parser = new DOMParser();
-        // allorigins는 XML 문자열을 data.contents에 담아줍니다.
         const xmlDoc = parser.parseFromString(data.contents, "text/xml");
-        const items = Array.from(xmlDoc.querySelectorAll('item')).slice(0, 5);
+        const items = Array.from(xmlDoc.querySelectorAll('item')).slice(0, 3); // 상위 3개만 표시
 
         if (items.length > 0) {
-            hotPostsContainer.innerHTML = items.map(item => {
+            container.innerHTML = items.map(item => {
                 const title = item.querySelector('title').textContent;
                 const link = item.querySelector('link').textContent;
-                // 네이버 RSS 날짜 파싱
                 const pubDate = new Date(item.querySelector('pubDate').textContent);
-                const timeText = formatTimeAgo(pubDate);
+                
+                // 날짜 포맷 (YYYY.MM.DD)
+                const dateText = pubDate.toLocaleDateString('ko-KR', {
+                    year: 'numeric', month: '2-digit', day: '2-digit'
+                }).replace(/\. /g, '.').replace(/\.$/, '');
+
+                // 요약 내용 (description에서 텍스트만 추출)
+                const description = item.querySelector('description').textContent;
+                const summary = description.replace(/<[^>]*>?/gm, '').substring(0, 80) + "...";
 
                 return `
-                    <div class="group cursor-pointer py-1" onclick="window.open('${link}', '_blank')">
-                        <p class="font-bold truncate group-hover:text-[#8a9a5b]">• ${title}</p>
-                        <span class="text-[9px] text-gray-500">${timeText} · 네이버 블로그</span>
+                    <div class="group cursor-pointer p-4 bg-black/20 rounded-xl border border-gray-800 hover:border-[#8a9a5b] transition-all" 
+                         onclick="window.open('${link}', '_blank')">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-[9px] bg-[#8a9a5b] text-black px-2 py-0.5 rounded font-bold uppercase tracking-tighter">New Post</span>
+                            <span class="text-[10px] text-gray-600 font-medium">${dateText}</span>
+                        </div>
+                        <h3 class="font-bold text-sm group-hover:text-[#8a9a5b] mb-1">${title}</h3>
+                        <p class="text-[11px] text-gray-500 line-clamp-1 leading-relaxed">${summary}</p>
                     </div>
                 `;
             }).join('');
         }
     } catch (error) {
-        console.error("블로그 로드 실패:", error);
-        hotPostsContainer.innerHTML = `<p class="text-center py-4 text-gray-600 text-[10px]">블로그 소식을 가져올 수 없습니다.</p>`;
+        console.error("블로그 업데이트 로드 실패:", error);
+        container.innerHTML = `<p class="text-center py-10 text-gray-600 text-xs">블로그 소식을 불러올 수 없습니다.</p>`;
     }
 }
 
