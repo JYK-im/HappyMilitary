@@ -334,22 +334,37 @@ setInterval(() => { if(allMarts.length > 0) renderMarts(allMarts); }, 60000);
 function sendChat() {
     if (!currentUser) return;
     const input = document.getElementById('chatInput');
-    if(!input.value.trim()) return;
-    const box = document.getElementById('msgBox');
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
-    const msgHtml = `
-        <div class="flex flex-col items-end animate-fade-in">
-            <div class="bg-[#8a9a5b] text-black p-2.5 rounded-2xl rounded-tr-none max-w-[90%] font-medium shadow-lg">
-                ${input.value}
-            </div>
-            <span class="text-[8px] text-gray-600 mt-1">${time}</span>
-        </div>
-    `;
-    box.insertAdjacentHTML('beforeend', msgHtml);
+    const text = input.value.trim();
+    if(!text) return;
+
+    db.ref('chats').push({
+        uid: currentUser.uid,
+        userName: currentUser.displayName,
+        message: text,
+        timestamp: Date.now()
+    });
     input.value = "";
-    box.scrollTop = box.scrollHeight;
 }
+
+// 6. 초기 실행 및 이벤트 바인딩
+document.addEventListener('DOMContentLoaded', () => {
+    loadMartData();
+    loadAptNotices();
+    loadBlogUpdates();
+    
+    document.getElementById('waSearch')?.addEventListener('input', (e) => {
+        const val = e.target.value.toLowerCase();
+        const filtered = allMarts.filter(m => m.MART.toLowerCase().includes(val) || m.LOC.toLowerCase().includes(val));
+        renderMarts(filtered);
+    });
+
+    // 엔터키로 채팅 전송
+    document.getElementById('chatInput')?.addEventListener('keypress', (e) => {
+        if(e.key === 'Enter') sendChat();
+    });
+});
+
+setInterval(() => { if(allMarts.length > 0) renderMarts(allMarts); }, 60000);
 
 
 // 블로그 최신글 로드 함수
@@ -421,3 +436,4 @@ function formatTimeAgo(date) {
     if (diff < 1440) return `${Math.floor(diff / 60)}시간 전`;
     return `${Math.floor(diff / 1440)}일 전`;
 }
+
