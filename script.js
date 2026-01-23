@@ -319,45 +319,106 @@ document.getElementById('waSearch')?.addEventListener('input', (e) => {
     });
 });
 
-// 실시간 업데이트 (1분마다)
-setInterval(() => { if(allMarts.length > 0) renderMarts(allMarts); }, 60000);
 
 // 6. 채팅 기능 (기존 유지)
 function sendChat() {
-    if (!currentUser) return;
+    // 1. 로그인 여부 확인
+    if (!currentUser) {
+        alert("로그인이 필요합니다.");
+        return;
+    }
+
     const input = document.getElementById('chatInput');
     const text = input.value.trim();
+
+    // 2. 빈 메시지 체크
     if(!text) return;
 
+    // 3. Firebase DB 저장
     db.ref('chats').push({
         uid: currentUser.uid,
         userName: currentUser.displayName,
         message: text,
         timestamp: Date.now()
+    }).then(() => {
+        input.value = ""; // 전송 후 입력창 비우기
+        console.log("메시지 전송 성공");
+    }).catch(error => {
+        console.error("전송 에러:", error);
     });
-    input.value = "";
 }
 
-// 6. 초기 실행 및 이벤트 바인딩
-document.addEventListener('DOMContentLoaded', () => {
-    loadMartData();
-    loadAptNotices();
-    loadBlogUpdates();
+// 실시간 채팅 리스너 (한 번만 설정)
+db.ref('chats').limitToLast(20).on('child_added', (snapshot) => {
+    const msg = snapshot.val();
+    const box = document.getElementById('msgBox');
+    if (!box) return;
+
+    const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const isMe = currentUser && (msg.uid === currentUser.uid);
     
+    const msgHtml = `
+        <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} animate-fade-in mb-4">
+            <span class="text-[9px] text-gray-400 mb-1">${msg.userName}</span>
+            <div class="${isMe ? 'bg-[#8a9a5b] text-black' : 'bg-gray-700 text-white'} p-2.5 rounded-2xl max-w-[90%] font-medium shadow-lg">
+                ${msg.message}
+            </div>
+            <span class="text-[8px] text-gray-600 mt-1">${time}</span>
+        </div>
+    `;
+    box.insertAdjacentHTML('beforeend', msgHtml);
+    box.scrollTop = box.scrollHeight;
+});
+
+// [4] 테마 설정
+function toggleTheme() {
+    const html = document.documentElement;
+    const isLight = html.classList.toggle('light');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    updateThemeIcon(isLight);
+}
+
+function updateThemeIcon(isLight) {
+    const icon = document.getElementById('themeIcon');
+    if (!icon) return;
+    if (isLight) {
+        icon.classList.replace('fa-moon', 'fa-sun');
+        icon.classList.replace('text-yellow-500', 'text-orange-500');
+    } else {
+        icon.classList.replace('fa-sun', 'fa-moon');
+        icon.classList.replace('text-orange-500', 'text-yellow-500');
+    }
+}
+
+// [5] 초기 실행 및 이벤트 바인딩
+document.addEventListener('DOMContentLoaded', () => {
+    // 테마 복원
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        document.documentElement.classList.add('light');
+        updateThemeIcon(true);
+    }
+
+    // 데이터 로드 호출
+    if (typeof loadMartData === 'function') loadMartData();
+    if (typeof loadAptNotices === 'function') loadAptNotices();
+    if (typeof loadBlogUpdates === 'function') loadBlogUpdates();
+    
+    // 검색 이벤트
     document.getElementById('waSearch')?.addEventListener('input', (e) => {
         const val = e.target.value.toLowerCase();
         const filtered = allMarts.filter(m => m.MART.toLowerCase().includes(val) || m.LOC.toLowerCase().includes(val));
         renderMarts(filtered);
     });
 
-    // 엔터키로 채팅 전송
+    // 엔터키 전송 (중요)
     document.getElementById('chatInput')?.addEventListener('keypress', (e) => {
-        if(e.key === 'Enter') sendChat();
+        if(e.key === 'Enter') {
+            e.preventDefault(); // 기본 줄바꿈 방지
+            sendChat();
+        }
     });
 });
-
-setInterval(() => { if(allMarts.length > 0) renderMarts(allMarts); }, 60000);
-
 
 // 블로그 최신글 로드 함수
 async function loadBlogUpdates() {
@@ -428,5 +489,6 @@ function formatTimeAgo(date) {
     if (diff < 1440) return `${Math.floor(diff / 60)}시간 전`;
     return `${Math.floor(diff / 1440)}일 전`;
 }
+
 
 
