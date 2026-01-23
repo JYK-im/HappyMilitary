@@ -242,25 +242,31 @@ auth.onAuthStateChanged((user) => {
 // 4. 특별공급 공고 로드 함수 (JSON 데이터 추출 방식 적용)
 async function loadAptNotices() {
     const listContainer = document.getElementById('aptNoticeList');
-    // 게시판 메인 URL
     const boardUrl = "https://www.welfare.mil.kr/board/board.do?m_code=1179&be_id=c_apt";
     
-    // 로컬 캐시 확인 (즉시 노출)
+    // 로컬 캐시 확인 (사용자에게 일단 예전 데이터라도 빨리 보여주기 위함)
     const cachedApt = localStorage.getItem('apt_local_cache');
     if (cachedApt) {
         listContainer.innerHTML = cachedApt;
     }
 
     try {
-        const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(boardUrl)}&_=${Date.now()}`, {
-            signal: AbortSignal.timeout(6000)
+        // [수정 포인트] URL 끝에 날짜와 랜덤 숫자를 섞어 매번 고유한 URL을 생성합니다. (캐시 방지)
+        const uniqueParam = `_=${Date.now()}_${Math.random().toString(36).substring(7)}`;
+        const finalUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(boardUrl)}&${uniqueParam}`;
+
+        const response = await fetch(finalUrl, {
+            // 모바일 브라우저에 강제로 캐시를 사용하지 말라고 명령합니다.
+            cache: 'no-store',
+            headers: {
+                'Pragma': 'no-cache',
+                'Cache-Control': 'no-cache'
+            }
         });
-        
+
         const data = await response.json();
-        const htmlText = data.contents;
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(htmlText, "text/html");
-        const rows = doc.querySelectorAll("table tbody tr"); // tbody 명시하여 헤더 제외
+        const doc = new DOMParser().parseFromString(data.contents, "text/html");
+        const rows = doc.querySelectorAll("table tbody tr");
         
         let noticeHtml = "";
         let foundCount = 0;
@@ -269,22 +275,14 @@ async function loadAptNotices() {
             const linkElement = row.querySelector("a");
             if (linkElement && foundCount < 5) {
                 const title = linkElement.innerText.trim();
-                
-                // [핵심] 상세 게시물 ID 추출 (onclick 이벤트나 href 속성에서 추출)
-                // 보통 'viewBoard('12345')' 같은 형태이므로 숫자만 뽑아냅니다.
                 const onclickText = linkElement.getAttribute("onclick") || "";
                 const postIdMatch = onclickText.match(/\d+/);
                 const postId = postIdMatch ? postIdMatch[0] : "";
-                
-                // 상세 페이지 링크 생성 (게시판 주소 + 게시물 번호 파라미터)
-                const detailUrl = postId 
-                    ? `https://www.welfare.mil.kr/board/board.do?m_code=1179&be_id=c_apt&gs_id=${postId}&method=view`
-                    : boardUrl;
+                const detailUrl = postId ? `https://www.welfare.mil.kr/board/board.do?m_code=1179&be_id=c_apt&gs_id=${postId}&method=view` : boardUrl;
 
-                if (title.length > 5 && !title.includes("자바스크립트")) {
+                if (title.length > 5) {
                     const tds = row.querySelectorAll("td");
                     const date = tds.length > 2 ? tds[tds.length - 2].innerText.trim() : "";
-                    
                     noticeHtml += `
                         <li class="group border-b border-gray-800/50 pb-2 last:border-0">
                             <a href="${detailUrl}" target="_blank" class="block group-hover:text-[#8a9a5b]">
@@ -299,21 +297,15 @@ async function loadAptNotices() {
 
         if (foundCount > 0) {
             listContainer.innerHTML = noticeHtml;
+            // 최신 데이터로 로컬 캐시 갱신
             localStorage.setItem('apt_local_cache', noticeHtml);
         }
-    } catch (error) {
-        console.error("공고 로드 실패:", error);
-        if (!listContainer.innerHTML || listContainer.innerHTML.includes('로딩')) {
-            listContainer.innerHTML = `
-                <li class="py-4 text-center">
-                    <p class="text-[10px] text-gray-500 mb-2">서버 응답이 늦어지고 있습니다.</p>
-                    <a href="${boardUrl}" target="_blank" class="btn-khaki px-4 py-2 rounded-full text-[9px] inline-block">
-                        공고 게시판 바로가기
-                    </a>
-                </li>`;
-        }
+    } catch (e) { 
+        console.error("공고 로드 실패", e);
     }
-}// 5. 페이지 초기화 및 검색 이벤트 (함수 호출 보장)
+}
+
+// 5. 페이지 초기화 및 검색 이벤트 (함수 호출 보장)
 document.addEventListener('DOMContentLoaded', () => {
     loadMartData();   // 영외마트 로드
     loadAptNotices(); // 특별공급 로드
@@ -436,4 +428,5 @@ function formatTimeAgo(date) {
     if (diff < 1440) return `${Math.floor(diff / 60)}시간 전`;
     return `${Math.floor(diff / 1440)}일 전`;
 }
+
 
