@@ -217,19 +217,16 @@ async function loadAptNotices() {
     const listContainer = document.getElementById('aptNoticeList');
     const boardUrl = "https://www.welfare.mil.kr/board/board.do?m_code=1179&be_id=c_apt";
     
-    // 로컬 캐시 확인 (사용자에게 일단 예전 데이터라도 빨리 보여주기 위함)
     const cachedApt = localStorage.getItem('apt_local_cache');
     if (cachedApt) {
         listContainer.innerHTML = cachedApt;
     }
 
     try {
-        // [수정 포인트] URL 끝에 날짜와 랜덤 숫자를 섞어 매번 고유한 URL을 생성합니다. (캐시 방지)
         const uniqueParam = `_=${Date.now()}_${Math.random().toString(36).substring(7)}`;
         const finalUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(boardUrl)}&${uniqueParam}`;
 
         const response = await fetch(finalUrl, {
-            // 모바일 브라우저에 강제로 캐시를 사용하지 말라고 명령합니다.
             cache: 'no-store',
             headers: {
                 'Pragma': 'no-cache',
@@ -341,7 +338,6 @@ function updateThemeIcon(isLight) {
 
 // [5] 초기 실행 및 이벤트 바인딩
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. 테마 복원
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'light') {
         document.documentElement.classList.add('light');
@@ -349,19 +345,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 2. 데이터 로드 호출
-    loadMartData();
-    loadAptNotices();
-    loadBlogUpdates();
+Promise.all([
+        quickFetchMarts(),
+        loadAptNotices(),
+        loadBlogUpdates()
+    ]).catch(err => console.error("일부 데이터 로드 실패:", err));
     
     // 3. 검색 이벤트 바인딩
-    document.getElementById('waSearch')?.addEventListener('input', (e) => {
+document.getElementById('waSearch')?.addEventListener('input', (e) => {
         const val = e.target.value.toLowerCase();
         const filtered = allMarts.filter(m => m.MART.toLowerCase().includes(val) || m.LOC.toLowerCase().includes(val));
         renderMarts(filtered);
     });
 
     // 4. 채팅 엔터키 전송 이벤트
-    const chatInput = document.getElementById('chatInput');
+const chatInput = document.getElementById('chatInput');
     chatInput?.addEventListener('keypress', (e) => {
         if(e.key === 'Enter') {
             e.preventDefault(); 
@@ -369,6 +367,37 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+async function quickFetchMarts() {
+    const listContainer = document.getElementById('waList');
+    const myKey = "3231313637393730303336333832313035";
+    const apiUrl = `https://openapi.mnd.go.kr/${myKey}/xml/TB_MND_MART_CURRENT/1/999/`;
+    
+    // raw 모드를 사용하면 JSON 파싱 과정이 줄어들어 더 빠릅니다.
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
+
+    try {
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error('Network error');
+        
+        const xmlText = await response.text();
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+        const rows = Array.from(xmlDoc.querySelectorAll('row'));
+
+        if (rows.length > 0) {
+            allMarts = rows.map(row => ({
+                MART: row.querySelector('MART')?.textContent || "정보없음",
+                LOC: row.querySelector('LOC')?.textContent || "주소없음",
+                TEL: row.querySelector('TEL')?.textContent || ""
+            }));
+            renderMarts(allMarts);
+        }
+    } catch (e) {
+        console.error("마트 로드 실패:", e);
+        listContainer.innerHTML = `<p class="text-center py-10 text-xs">정보를 가져오지 못했습니다.</p>`;
+    }
+}
 
 // 블로그 최신글 로드 함수
 async function loadBlogUpdates() {
