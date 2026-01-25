@@ -217,11 +217,6 @@ async function loadAptNotices() {
     const listContainer = document.getElementById('aptNoticeList');
     const boardUrl = "https://www.welfare.mil.kr/board/board.do?m_code=1179&be_id=c_apt";
     
-    const cachedApt = localStorage.getItem('apt_local_cache');
-    if (cachedApt) {
-        listContainer.innerHTML = cachedApt;
-    }
-
     try {
         const uniqueParam = `_=${Date.now()}_${Math.random().toString(36).substring(7)}`;
         const finalUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(boardUrl)}&${uniqueParam}`;
@@ -267,8 +262,6 @@ async function loadAptNotices() {
 
         if (foundCount > 0) {
             listContainer.innerHTML = noticeHtml;
-            // 최신 데이터로 로컬 캐시 갱신
-            localStorage.setItem('apt_local_cache', noticeHtml);
         }
     } catch (e) { 
         console.error("공고 로드 실패", e);
