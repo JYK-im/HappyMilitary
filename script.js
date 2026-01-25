@@ -30,19 +30,9 @@ provider.setCustomParameters({
 function handleLogin() {
     auth.signInWithPopup(provider)
         .then((result) => {
-            // 로그인 성공 시 사용자 정보를 가져옴
             currentUser = result.user;
-            
-            // UI 업데이트 (채팅창 활성화 등)
-            const overlay = document.getElementById('chatBlindOverlay');
-            overlay.classList.add('opacity-0');
-            setTimeout(() => overlay.classList.add('hidden'), 500);
-
-            const chatArea = document.getElementById('chatContentArea');
-            chatArea.classList.remove('opacity-20', 'pointer-events-none', 'select-none');
-            
-            document.getElementById('loginBtn').innerText = "로그아웃";
-document.getElementById('loginBtn').onclick = handleLogout;
+            // 직접 수정하지 말고, 이미 잘 만들어둔 updateUI를 호출하세요.
+            updateUI(currentUser); 
             console.log("로그인 성공:", currentUser.displayName);
         })
         .catch((error) => {
