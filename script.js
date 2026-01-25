@@ -42,30 +42,38 @@ function handleLogin() {
 }
 
 // UI 업데이트 함수 분리
-// UI 업데이트 함수 (기존 75라인 부근 수정)
+// script.js의 updateUI 함수 수정 (65라인 부근)
 function updateUI(user) {
     if (user) {
         const overlay = document.getElementById('chatBlindOverlay');
-        overlay.classList.add('opacity-0');
-        setTimeout(() => overlay.classList.add('hidden'), 500);
+        if (overlay) {
+            overlay.classList.add('opacity-0');
+            setTimeout(() => overlay.classList.add('hidden'), 500);
+        }
 
         const chatArea = document.getElementById('chatContentArea');
         chatArea.classList.remove('opacity-20', 'pointer-events-none', 'select-none');
         
         const input = document.getElementById('chatInput');
-        input.disabled = false;
-        input.placeholder = `${user.displayName}님, 대화에 참여하세요!`;
+        const sendBtn = document.querySelector('#chatContentArea button'); // ID 대신 셀렉터로 확실히 지정
 
-        // [이 코드를 추가하세요] 버튼 활성화 및 불투명도 제거
-        const sendBtn = chatArea.querySelector('button');
+        if (input) {
+            input.disabled = false;
+            input.placeholder = `${user.displayName}님, 대화에 참여하세요!`;
+        }
+
         if (sendBtn) {
             sendBtn.disabled = false;
             sendBtn.classList.remove('opacity-50');
+            // 모바일 터치 인식 개선을 위해 클래스 추가 (선택사항)
+            sendBtn.classList.add('cursor-pointer', 'active:scale-95');
         }
 
         const loginBtn = document.getElementById('loginBtn');
-        loginBtn.innerText = "로그아웃";
-        loginBtn.onclick = handleLogout;
+        if (loginBtn) {
+            loginBtn.innerText = "로그아웃";
+            loginBtn.onclick = handleLogout;
+        }
     }
 }
 
