@@ -1,5 +1,4 @@
 
-    // 2. Firebase 설정 및 초기화 (한 번만 선언)
 const firebaseConfig = {
   apiKey: "AIzaSyDaNmDpDXgiuELEO65Wk0PazVT2yeQeags",
   authDomain: "dividend-b090d.firebaseapp.com",
@@ -18,7 +17,6 @@ const firebaseConfig = {
     let currentUser = null; 
     let allMarts = [];
 
-// 1. Auth 인스턴스 초기화
 const auth = firebase.auth();
 const provider = new firebase.auth.GoogleAuthProvider();
 
@@ -26,7 +24,6 @@ provider.setCustomParameters({
   prompt: 'select_account'
 });
 
-// 2. 로그인 버튼 클릭 시 실행될 함수
 function handleLogin() {
     auth.signInWithPopup(provider)
         .then((result) => {
@@ -41,8 +38,6 @@ function handleLogin() {
         });
 }
 
-// UI 업데이트 함수 분리
-// script.js의 updateUI 함수 수정 (65라인 부근)
 function updateUI(user) {
     if (user) {
         const overlay = document.getElementById('chatBlindOverlay');
@@ -65,7 +60,6 @@ function updateUI(user) {
         if (sendBtn) {
             sendBtn.disabled = false;
             sendBtn.classList.remove('opacity-50');
-            // 모바일 터치 인식 개선을 위해 클래스 추가 (선택사항)
             sendBtn.classList.add('cursor-pointer', 'active:scale-95');
         }
 
@@ -365,15 +359,14 @@ async function quickFetchMarts() {
     const listContainer = document.getElementById('waList');
     const myKey = "3231313637393730303336333832313035";
     const apiUrl = `https://openapi.mnd.go.kr/${myKey}/xml/TB_MND_MART_CURRENT/1/999/`;
-    
-    // raw 모드를 사용하면 JSON 파싱 과정이 줄어들어 더 빠릅니다.
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
 
-    try {
+try {
         const response = await fetch(proxyUrl);
         if (!response.ok) throw new Error('Network error');
         
-        const xmlText = await response.text();
+        const data = await response.json();
+        const xmlText = data.contents;
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlText, "text/xml");
         const rows = Array.from(xmlDoc.querySelectorAll('row'));
@@ -395,15 +388,15 @@ async function quickFetchMarts() {
 // 블로그 최신글 로드 함수
 async function loadBlogUpdates() {
     const blogRssUrl = "https://rss.blog.naver.com/stream_deck";
-    // 'get' 대신 'raw'를 사용하여 더 직관적으로 데이터를 가져옵니다.
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(blogRssUrl)}`;
+const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(blogRssUrl)}`;
     const container = document.getElementById('blogUpdateList');
 
     try {
         const response = await fetch(proxyUrl);
         if (!response.ok) throw new Error('네트워크 응답에 문제가 있습니다.');
         
-        const xmlText = await response.text(); // raw 데이터를 텍스트로 바로 받음
+const data = await response.json(); 
+        const xmlText = data.contents; 
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlText, "text/xml");
         
