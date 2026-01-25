@@ -1,12 +1,3 @@
-// 페이지 로드 시 기존에 설정한 테마가 있는지 확인
-document.addEventListener('DOMContentLoaded', () => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'light') {
-        document.documentElement.classList.add('light');
-        updateThemeIcon(true);
-    }
-});
-
 
     // 2. Firebase 설정 및 초기화 (한 번만 선언)
 const firebaseConfig = {
@@ -289,46 +280,22 @@ async function loadAptNotices() {
     }
 }
 
-// 5. 페이지 초기화 및 검색 이벤트 (함수 호출 보장)
-document.addEventListener('DOMContentLoaded', () => {
-    loadMartData();   // 영외마트 로드
-    loadAptNotices(); // 특별공급 로드
-    loadBlogUpdates(); // 블로그 로드
-    
-    // 검색 기능: renderMarts(allMarts) 호출
-document.getElementById('waSearch')?.addEventListener('input', (e) => {
-        const val = e.target.value.toLowerCase();
-        const filtered = allMarts.filter(m => m.MART.toLowerCase().includes(val) || m.LOC.toLowerCase().includes(val));
-        renderMarts(filtered);
-    });
-});
-
 
 // 6. 채팅 기능 (기존 유지)
 function sendChat() {
-    // 1. 로그인 여부 확인
-    if (!currentUser) {
-        alert("로그인이 필요합니다.");
-        return;
-    }
-
+    if (!currentUser) { alert("로그인이 필요합니다."); return; }
     const input = document.getElementById('chatInput');
     const text = input.value.trim();
-
-    // 2. 빈 메시지 체크
     if(!text) return;
 
-    // 3. Firebase DB 저장
     db.ref('chats').push({
         uid: currentUser.uid,
         userName: currentUser.displayName,
         message: text,
         timestamp: Date.now()
     }).then(() => {
-        input.value = ""; // 전송 후 입력창 비우기
-        console.log("메시지 전송 성공");
-    }).catch(error => {
-        console.error("전송 에러:", error);
+        input.value = ""; 
+        input.focus(); // 전송 후 바로 다시 입력할 수 있게 포커스 유지
     });
 }
 
@@ -376,29 +343,30 @@ function updateThemeIcon(isLight) {
 
 // [5] 초기 실행 및 이벤트 바인딩
 document.addEventListener('DOMContentLoaded', () => {
-    // 테마 복원
+    // 1. 테마 복원
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'light') {
         document.documentElement.classList.add('light');
         updateThemeIcon(true);
     }
 
-    // 데이터 로드 호출
-    if (typeof loadMartData === 'function') loadMartData();
-    if (typeof loadAptNotices === 'function') loadAptNotices();
-    if (typeof loadBlogUpdates === 'function') loadBlogUpdates();
+    // 2. 데이터 로드 호출
+    loadMartData();
+    loadAptNotices();
+    loadBlogUpdates();
     
-    // 검색 이벤트
+    // 3. 검색 이벤트 바인딩
     document.getElementById('waSearch')?.addEventListener('input', (e) => {
         const val = e.target.value.toLowerCase();
         const filtered = allMarts.filter(m => m.MART.toLowerCase().includes(val) || m.LOC.toLowerCase().includes(val));
         renderMarts(filtered);
     });
 
-    // 엔터키 전송 (중요)
-    document.getElementById('chatInput')?.addEventListener('keypress', (e) => {
+    // 4. 채팅 엔터키 전송 이벤트
+    const chatInput = document.getElementById('chatInput');
+    chatInput?.addEventListener('keypress', (e) => {
         if(e.key === 'Enter') {
-            e.preventDefault(); // 기본 줄바꿈 방지
+            e.preventDefault(); 
             sendChat();
         }
     });
@@ -473,6 +441,5 @@ function formatTimeAgo(date) {
     if (diff < 1440) return `${Math.floor(diff / 60)}시간 전`;
     return `${Math.floor(diff / 1440)}일 전`;
 }
-
 
 
