@@ -7,27 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-function toggleTheme() {
-    const html = document.documentElement;
-    const isLight = html.classList.toggle('light');
-    
-    // 사용자의 선택을 저장 (새로고침 시 유지)
-    localStorage.setItem('theme', isLight ? 'light' : 'dark');
-    updateThemeIcon(isLight);
-}
-
-
-
-function updateThemeIcon(isLight) {
-    const icon = document.getElementById('themeIcon');
-    if (isLight) {
-        icon.classList.replace('fa-moon', 'fa-sun');
-        icon.classList.replace('text-yellow-500', 'text-orange-500');
-    } else {
-        icon.classList.replace('fa-sun', 'fa-moon');
-        icon.classList.replace('text-orange-500', 'text-yellow-500');
-    }
-}
 
     // 2. Firebase 설정 및 초기화 (한 번만 선언)
 const firebaseConfig = {
@@ -378,9 +357,9 @@ function toggleTheme() {
     updateThemeIcon(isLight);
 }
 
+
 function updateThemeIcon(isLight) {
     const icon = document.getElementById('themeIcon');
-    if (!icon) return;
     if (isLight) {
         icon.classList.replace('fa-moon', 'fa-sun');
         icon.classList.replace('text-yellow-500', 'text-orange-500');
@@ -489,6 +468,5 @@ function formatTimeAgo(date) {
     if (diff < 1440) return `${Math.floor(diff / 60)}시간 전`;
     return `${Math.floor(diff / 1440)}일 전`;
 }
-
 
 
