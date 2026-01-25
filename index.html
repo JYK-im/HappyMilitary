@@ -8,6 +8,29 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
 
+/* index.html <style> 태그 내 추가 */
+/* 로딩 애니메이션 최적화 */
+@keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.animate-pulse-soft {
+    animation: pulse-soft 1.5s infinite ease-in-out;
+}
+
+/* 모바일 터치 피드백 강화 */
+#chatSendBtn:active {
+    transform: scale(0.9);
+    background-color: #626f3d !important;
+}
+
+/* 텍스트가 즉시 렌더링되도록 보장 */
+* {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700&display=swap');
         body { font-family: 'Pretendard', sans-serif; background-color: #121418; color: #e1e1e1; overflow-x: hidden; }
         .accent-khaki { color: #8a9a5b; } 
