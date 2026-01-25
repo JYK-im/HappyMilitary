@@ -61,14 +61,13 @@ document.getElementById('loginBtn').onclick = handleLogout;
 }
 
 // UI 업데이트 함수 분리
+// UI 업데이트 함수 (기존 75라인 부근 수정)
 function updateUI(user) {
     if (user) {
-        // 1. 오버레이 숨기기
         const overlay = document.getElementById('chatBlindOverlay');
         overlay.classList.add('opacity-0');
         setTimeout(() => overlay.classList.add('hidden'), 500);
 
-        // 2. 채팅창 활성화
         const chatArea = document.getElementById('chatContentArea');
         chatArea.classList.remove('opacity-20', 'pointer-events-none', 'select-none');
         
@@ -76,10 +75,16 @@ function updateUI(user) {
         input.disabled = false;
         input.placeholder = `${user.displayName}님, 대화에 참여하세요!`;
 
-        // 3. 상단 버튼을 로그아웃으로 변경
+        // [이 코드를 추가하세요] 버튼 활성화 및 불투명도 제거
+        const sendBtn = chatArea.querySelector('button');
+        if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.classList.remove('opacity-50');
+        }
+
         const loginBtn = document.getElementById('loginBtn');
         loginBtn.innerText = "로그아웃";
-        loginBtn.onclick = handleLogout; // 로그아웃 함수 연결
+        loginBtn.onclick = handleLogout;
     }
 }
 
@@ -468,5 +473,6 @@ function formatTimeAgo(date) {
     if (diff < 1440) return `${Math.floor(diff / 60)}시간 전`;
     return `${Math.floor(diff / 1440)}일 전`;
 }
+
 
 
