@@ -205,26 +205,19 @@ auth.onAuthStateChanged((user) => {
                 </div>`;
         }).join('');
     }
-
+const MY_PROXY = "https://us-central1-dividend-b090d.cloudfunctions.net/getMilitaryData";
 // 4. 특별공급 공고 로드 함수 (JSON 데이터 추출 방식 적용)
 async function loadAptNotices() {
     const listContainer = document.getElementById('aptNoticeList');
     const boardUrl = "https://www.welfare.mil.kr/board/board.do?m_code=1179&be_id=c_apt";
-    
+    const proxyUrl = `${MY_PROXY}?url=${encodeURIComponent(boardUrl)}`;
+  
     try {
-        const uniqueParam = `_=${Date.now()}_${Math.random().toString(36).substring(7)}`;
-        const finalUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(boardUrl)}&${uniqueParam}`;
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error('Proxy error');
 
-        const response = await fetch(finalUrl, {
-            cache: 'no-store',
-            headers: {
-                'Pragma': 'no-cache',
-                'Cache-Control': 'no-cache'
-            }
-        });
-
-        const data = await response.json();
-        const doc = new DOMParser().parseFromString(data.contents, "text/html");
+        const htmlText = await response.text(); // JSON이 아닌 텍스트로 바로 받음
+        const doc = new DOMParser().parseFromString(htmlText, "text/html");
         const rows = doc.querySelectorAll("table tbody tr");
         
         let noticeHtml = "";
@@ -254,9 +247,7 @@ async function loadAptNotices() {
             }
         });
 
-        if (foundCount > 0) {
-            listContainer.innerHTML = noticeHtml;
-        }
+        if (foundCount > 0) listContainer.innerHTML = noticeHtml;
     } catch (e) { 
         console.error("공고 로드 실패", e);
     }
@@ -359,14 +350,13 @@ async function quickFetchMarts() {
     const listContainer = document.getElementById('waList');
     const myKey = "3231313637393730303336333832313035";
     const apiUrl = `https://openapi.mnd.go.kr/${myKey}/xml/TB_MND_MART_CURRENT/1/999/`;
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
-
-try {
+    const proxyUrl = `${MY_PROXY}?url=${encodeURIComponent(apiUrl)}`;
+  
+    try {
         const response = await fetch(proxyUrl);
         if (!response.ok) throw new Error('Network error');
         
-        const data = await response.json();
-        const xmlText = data.contents;
+        const xmlText = await response.text(); // 전용 프록시는 XML을 그대로 줍니다
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlText, "text/xml");
         const rows = Array.from(xmlDoc.querySelectorAll('row'));
@@ -388,29 +378,25 @@ try {
 // 블로그 최신글 로드 함수
 async function loadBlogUpdates() {
     const blogRssUrl = "https://rss.blog.naver.com/stream_deck";
-const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(blogRssUrl)}`;
+    const proxyUrl = `${MY_PROXY}?url=${encodeURIComponent(blogRssUrl)}`;
     const container = document.getElementById('blogUpdateList');
 
     try {
         const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error('네트워크 응답에 문제가 있습니다.');
+        if (!response.ok) throw new Error('네트워크 응답 에러');
         
-const data = await response.json(); 
-        const xmlText = data.contents; 
+        const xmlText = await response.text(); 
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlText, "text/xml");
         
-        // XML 파싱 에러 확인
-        const parseError = xmlDoc.getElementsByTagName("parsererror");
-        if (parseError.length > 0) throw new Error("XML 파싱 에러");
-
         const items = Array.from(xmlDoc.querySelectorAll('item')).slice(0, 3);
 
         if (items.length > 0) {
             container.innerHTML = items.map(item => {
                 const title = item.querySelector('title')?.textContent || "제목 없음";
                 const link = item.querySelector('link')?.textContent || "#";
-                const pubDate = new Date(item.querySelector('pubDate')?.textContent);
+                const pubDateStr = item.querySelector('pubDate')?.textContent;
+                const pubDate = pubDateStr ? new Date(pubDateStr) : new Date();
                 
                 const dateText = pubDate.toLocaleDateString('ko-KR', {
                     year: 'numeric', month: '2-digit', day: '2-digit'
@@ -431,19 +417,9 @@ const data = await response.json();
                     </div>
                 `;
             }).join('');
-        } else {
-            container.innerHTML = `<p class="text-center py-10 text-gray-600 text-xs">최신 게시글이 없습니다.</p>`;
         }
     } catch (error) {
-        console.error("블로그 로드 실패 상세:", error);
-        container.innerHTML = `
-            <div class="text-center py-10">
-                <p class="text-gray-600 text-xs mb-2">블로그 소식을 실시간으로 불러오지 못했습니다.</p>
-                <button onclick="window.open('https://blog.naver.com/stream_deck', '_blank')" 
-                        class="text-[10px] text-[#8a9a5b] underline">
-                    블로그에서 직접 확인하기
-                </button>
-            </div>`;
+        console.error("블로그 로드 실패:", error);
     }
 }
 
@@ -454,5 +430,6 @@ function formatTimeAgo(date) {
     if (diff < 1440) return `${Math.floor(diff / 60)}시간 전`;
     return `${Math.floor(diff / 1440)}일 전`;
 }
+
 
 
