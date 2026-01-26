@@ -74,7 +74,7 @@ function updateUI(user) {
 // 로그아웃 함수
 function handleLogout() {
     auth.signOut().then(() => {
-        location.reload(); // 단순하게 페이지 새로고침으로 상태 초기화
+        location.reload();
     });
 }
 
@@ -86,20 +86,11 @@ auth.onAuthStateChanged((user) => {
     }
 });
 
-    // 3. 마트 데이터 로드 (캐시 우선 방식)
+    // 3. 마트 데이터 로드
    async function loadMartData() {
     const listContainer = document.getElementById('waList');
-    
-    // [추가] 1. 브라우저 로컬 캐시 먼저 확인 (즉시 노출)
-    const localCache = localStorage.getItem('marts_local_cache');
-    if (localCache) {
-        allMarts = JSON.parse(localCache);
-        renderMarts(allMarts);
-        console.log("로컬 캐시로 먼저 화면을 띄웠습니다.");
-    }
 
     try {
-        // [개선] 2. 타임아웃 설정 (5초)
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
 
@@ -169,44 +160,107 @@ auth.onAuthStateChanged((user) => {
     }
 }
 
-    // 5. 통합 렌더링 함수
-    function renderMarts(marts) {
-        const listContainer = document.getElementById('waList');
-        if (!listContainer) return;
+// 마트 리스트 업데이트 및 통계 계산 함수
+function updateWAStatus(martData) {
+    let openCount = 0;
+    let closedCount = 0;
+    const now = new Date();
+    const currentTime = now.getHours() * 100 + now.getMinutes(); // 예: 15:30 -> 1530
 
-        const now = new Date();
-        const curTime = now.getHours() * 100 + now.getMinutes();
-        const day = now.getDay();
+    const listHtml = martData.map(mart => {
+        // 운영 시간 파싱 (데이터 형식에 따라 조정 필요)
+        // 여기서는 예시로 '운영중' 상태를 판별한다고 가정합니다.
+        const isOpen = checkMartOpen(mart.time); 
+        
+        if (isOpen) openCount++;
+        else closedCount++;
 
-        listContainer.innerHTML = marts.map(mart => {
-            let status = { text: "운영 종료", color: "text-red-500", dot: "bg-red-500" };
-            let isHoliday = (day === 0); // 일요일 휴무 가정
-            let openTime = 900, closeTime = (day === 6) ? 1500 : 1800;
+        return `
+            <div class="p-3 rounded-xl bg-black/20 border border-gray-800 hover:border-[#8a9a5b]/50 transition-all">
+                <div class="flex justify-between items-start mb-1">
+                    <h4 class="font-bold text-xs text-white">${mart.name}</h4>
+                    <span class="${isOpen ? 'text-green-500' : 'text-red-500'} text-[9px] font-black">
+                        ● ${isOpen ? '운영 중' : '운영 종료'}
+                    </span>
+                </div>
+                <p class="text-[10px] text-gray-500 mb-1"><i class="fa-solid fa-location-dot mr-1"></i>${mart.address}</p>
+                <p class="text-[9px] text-gray-600"><i class="fa-regular fa-clock mr-1"></i>${mart.time}</p>
+            </div>
+        `;
+    }).join('');
 
-            if (!isHoliday && curTime >= openTime && curTime < closeTime) {
-                status = (curTime >= 1200 && curTime < 1300) 
-                    ? { text: "점심 시간", color: "text-yellow-500", dot: "bg-yellow-500" }
-                    : { text: "운영 중", color: "text-green-500", dot: "bg-green-500 animate-pulse" };
+    document.getElementById('waList').innerHTML = listHtml;
+    
+    // 🔢 숫자 업데이트
+    document.getElementById('waOpenCount').innerText = `운영중 ${openCount}`;
+    document.getElementById('waClosedCount').innerText = `운영종료 ${closedCount}`;
+}
+
+// 간단한 시간 체크 함수 (예시)
+function checkMartOpen(timeStr) {
+    if (!timeStr || timeStr.includes('휴점')) return false;
+    // 실제 운영시간 파싱 로직이 이곳에 들어갑니다.
+    return true; 
+}
+// [통합 수정] 마트 리스트 렌더링 및 실시간 통계 계산
+function renderMarts(marts) {
+    const listContainer = document.getElementById('waList');
+    const openBadge = document.getElementById('waOpenCount');   // HTML의 숫자 표시 ID
+    const closedBadge = document.getElementById('waClosedCount'); // HTML의 숫자 표시 ID
+    if (!listContainer) return;
+
+    const now = new Date();
+    const curTime = now.getHours() * 100 + now.getMinutes();
+    const day = now.getDay();
+
+    let openCount = 0;
+    let closedCount = 0;
+
+    listContainer.innerHTML = marts.map(mart => {
+        // 기본 상태: 운영 종료
+        let status = { text: "운영 종료", color: "text-red-500", dot: "bg-red-500" };
+        let isHoliday = (day === 0); // 일요일 휴무 가정
+        let openTime = 900, closeTime = (day === 6) ? 1500 : 1800; // 토요일은 15시, 평일 18시
+
+        let isOpen = false;
+        // 운영 시간 체크 로직
+        if (!isHoliday && curTime >= openTime && curTime < closeTime) {
+            isOpen = true;
+            if (curTime >= 1200 && curTime < 1300) {
+                status = { text: "점심 시간", color: "text-yellow-500", dot: "bg-yellow-500" };
+            } else {
+                status = { text: "운영 중", color: "text-green-500", dot: "bg-green-500 animate-pulse" };
             }
+        }
 
-            return `
-                <div class="flex flex-col p-3 bg-black/20 rounded-xl border border-gray-800 hover:border-[#8a9a5b]/50 transition-all">
-                    <div class="flex justify-between items-start mb-1">
-                        <h4 class="text-[12px] font-bold text-white">${mart.MART}</h4>
-                        <span class="flex items-center gap-1 text-[9px] font-bold ${status.color}">
-                            <span class="w-1.5 h-1.5 rounded-full ${status.dot}"></span>${status.text}
-                        </span>
-                    </div>
-                    <p class="text-[9px] text-gray-500 truncate mb-2">${mart.LOC}</p>
-                    <div class="flex justify-between items-center text-[9px]">
-                         <span class="text-gray-600">Tel: ${mart.TEL || '정보없음'}</span>
-                         ${mart.TEL ? `<a href="tel:${mart.TEL}" class="accent-khaki font-bold">전화하기</a>` : ''}
-                    </div>
-                </div>`;
-        }).join('');
-    }
+        // 통계 카운트 (점심시간도 운영 중으로 간주하거나 필요시 분리)
+        if (isOpen) openCount++;
+        else closedCount++;
+
+        return `
+            <div class="flex flex-col p-3 bg-black/20 rounded-xl border border-gray-800 hover:border-[#8a9a5b]/50 transition-all">
+                <div class="flex justify-between items-start mb-1">
+                    <h4 class="text-[12px] font-bold text-white">${mart.MART}</h4>
+                    <span class="flex items-center gap-1 text-[9px] font-bold ${status.color}">
+                        <span class="w-1.5 h-1.5 rounded-full ${status.dot}"></span>${status.text}
+                    </span>
+                </div>
+                <p class="text-[9px] text-gray-500 truncate mb-2">${mart.LOC}</p>
+                <div class="flex justify-between items-center text-[9px]">
+                     <span class="text-gray-600">Tel: ${mart.TEL || '정보없음'}</span>
+                     ${mart.TEL ? `<a href="tel:${mart.TEL}" class="accent-khaki font-bold">전화하기</a>` : ''}
+                </div>
+            </div>`;
+    }).join('');
+
+    // ⭐ 상단 뱃지에 최종 숫자 주입 (이 부분이 핵심!)
+    if (openBadge) openBadge.innerText = openCount;
+    if (closedBadge) closedBadge.innerText = closedCount;
+}
+
+ 
 const MY_PROXY = "https://us-central1-dividend-b090d.cloudfunctions.net/getMilitaryData";
-// 4. 특별공급 공고 로드 함수 (JSON 데이터 추출 방식 적용)
+// 4. 특별공급 공고 로드 함수
 async function loadAptNotices() {
     const listContainer = document.getElementById('aptNoticeList');
     const boardUrl = "https://www.welfare.mil.kr/board/board.do?m_code=1179&be_id=c_apt";
@@ -216,7 +270,7 @@ async function loadAptNotices() {
         const response = await fetch(proxyUrl);
         if (!response.ok) throw new Error('Proxy error');
 
-        const htmlText = await response.text(); // JSON이 아닌 텍스트로 바로 받음
+        const htmlText = await response.text();
         const doc = new DOMParser().parseFromString(htmlText, "text/html");
         const rows = doc.querySelectorAll("table tbody tr");
         
@@ -225,7 +279,7 @@ async function loadAptNotices() {
 
         rows.forEach((row) => {
             const linkElement = row.querySelector("a");
-            if (linkElement && foundCount < 5) {
+            if (linkElement && foundCount < 6) {
                 const title = linkElement.innerText.trim();
                 const onclickText = linkElement.getAttribute("onclick") || "";
                 const postIdMatch = onclickText.match(/\d+/);
@@ -430,6 +484,5 @@ function formatTimeAgo(date) {
     if (diff < 1440) return `${Math.floor(diff / 60)}시간 전`;
     return `${Math.floor(diff / 1440)}일 전`;
 }
-
 
 
