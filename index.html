@@ -7,6 +7,30 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
+/* 메뉴바 가로 스크롤바 숨기기 */
+#mainMenu::-webkit-scrollbar { display: none; }
+#mainMenu { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* 메뉴 아이템 활성화 언더라인 */
+.menu-item.active {
+    color: #8a9a5b !important;
+}
+
+.menu-item.active::after {
+    content: "";
+    position: absolute;
+    bottom: -13px; /* border-b 선 위치에 맞게 조정 */
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: #8a9a5b;
+    border-radius: 2px 2px 0 0;
+}
+
+/* 라이트모드 시 배경색 강제 지정 제거 및 글자색 최적화 */
+html.light .menu-item:not(.active) {
+    color: #64748b !important; /* 배경이 밝아지므로 글자색을 적절한 회색으로 유지 */
+}
 
 @keyframes pulse-soft {
     0%, 100% { opacity: 1; }
@@ -77,7 +101,7 @@ html.light .btn-khaki {
 </head>
 <body class="p-4 md:p-6">
 
-    <header class="max-w-7xl mx-auto flex justify-between items-center py-6 mb-8 border-b border-gray-800">
+    <header class="max-w-7xl mx-auto flex justify-between items-center py-6 transition-colors">
         <div class="flex items-center gap-3">
             <div class="bg-[#8a9a5b] p-2 rounded-lg shadow-lg shadow-khaki/20">
                 <i class="fa-solid fa-person-military-pointing text-black text-2xl"></i>
@@ -103,7 +127,20 @@ html.light .btn-khaki {
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto grid grid-cols-1 xl:grid-cols-4 gap-6">
+<nav id="boardNavBar" class="sticky top-0 z-50 bg-transparent backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-all">
+    <div class="max-w-7xl mx-auto">
+        <ul id="mainMenu" class="flex overflow-x-auto whitespace-nowrap scrollbar-hide px-4 py-3 gap-8 text-[13px] font-bold text-gray-500 dark:text-gray-400">
+            <li class="menu-item active cursor-pointer relative py-1" onclick="switchBoard('home')">홈</li>
+            <li class="menu-item cursor-pointer relative py-1 hover:text-gray-900 dark:hover:text-white transition-colors" onclick="switchBoard('free')">자유게시판</li>
+            <li class="menu-item cursor-pointer relative py-1 hover:text-gray-900 dark:hover:text-white transition-colors" onclick="switchBoard('info')">정보공유</li>
+            <li class="menu-item cursor-pointer relative py-1 hover:text-gray-900 dark:hover:text-white transition-colors" onclick="switchBoard('qna')">질문답변</li>
+            <li class="menu-item cursor-pointer relative py-1 hover:text-gray-900 dark:hover:text-white transition-colors" onclick="switchBoard('market')">중고장터</li>
+            <li class="menu-item cursor-pointer relative py-1 hover:text-gray-900 dark:hover:text-white transition-colors" onclick="switchBoard('notice')">공지사항</li>
+        </ul>
+    </div>
+</nav>
+
+    <main class="max-w-7xl mx-auto grid grid-cols-1 xl:grid-cols-4 gap-6 mt-8">
         
         <div class="xl:col-span-1 space-y-6">
  <section class="bg-card p-5 rounded-2xl shadow-xl transition-all">
@@ -149,36 +186,39 @@ html.light .btn-khaki {
     </div>
 </section>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <section class="bg-card p-6 rounded-2xl shadow-xl border-b border-[#8a9a5b]/30 transition-all">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                        <h3 class="text-xl font-bold flex items-center gap-2">
-                            <i class="fa-solid fa-cart-shopping accent-khaki"></i> 영외마트(WA) 현황
-                        </h3>
-                        <div class="relative w-full md:w-40">
-                            <input type="text" id="waSearch" placeholder="지역명 검색" 
-                                class="w-full bg-black/50 border border-gray-700 px-3 py-1.5 rounded-xl text-[10px] focus:border-[#8a9a5b] outline-none">
-                        </div>
-                    </div>
-                    <div id="waList" class="grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto pr-2">
-                        <p class="text-center py-10 text-gray-600 animate-pulse text-[10px]">정보 동기화 중...</p>
-                    </div>
-                </section>
-
-                <section class="bg-card p-5 rounded-2xl h-fit min-h-[300px] transition-all">
-    <h3 class="text-sm font-bold mb-4 flex items-center gap-2 border-b border-gray-800 pb-2">
-        <i class="fa-solid fa-house-user accent-khaki"></i> 군 특별공급 공고
-    </h3>
-    <ul id="aptNoticeList" class="text-[11px] space-y-3">
-        <li class="text-center py-4 text-gray-600 animate-pulse">최신 공고 불러오는 중...</li>
-    </ul>
-    <div class="mt-4 pt-2 border-t border-gray-800 text-center">
-        <a href="https://www.welfare.mil.kr/board/board.do?m_code=1179&be_id=c_apt" target="_blank" class="text-[10px] text-gray-500 hover:text-white underline">
-            국군복지포털에서 더보기
-        </a>
-    </div>
-</section>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch"> 
+<section class="bg-card p-6 rounded-2xl shadow-xl border-b border-[#8a9a5b]/30 flex flex-col h-[400px]"> <div class="mb-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                <h3 class="text-xl font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-cart-shopping accent-khaki"></i> 영외마트(WA) 현황
+                </h3></div>
+                <div class="flex gap-2">
+                    <span class="bg-green-500/20 text-green-500 text-[10px] px-2 py-1 rounded-md border border-green-500/30 font-bold">
+                        운영중 <span id="waOpenCount">0</span>
+                    </span>
+                    <span class="bg-red-500/20 text-red-500 text-[10px] px-2 py-1 rounded-md border border-red-500/30 font-bold">
+                        종료 <span id="waClosedCount">0</span>
+                    </span>
+                </div>
             </div>
+            <div class="relative">
+                <input type="text" id="waSearch" placeholder="지역명 검색 (예: 서울, 파주...)" 
+                    class="w-full bg-black/20 border border-gray-700 px-3 py-2 rounded-xl text-xs focus:border-[#8a9a5b] outline-none">
+            </div>
+       
+
+        <div id="waList" class="flex-1 overflow-y-auto pr-2 space-y-3 scrollbar-hide">
+            </div>
+    </section>
+
+    <section class="bg-card p-6 rounded-2xl shadow-xl flex flex-col h-[400px]">
+        <h3 class="text-sm font-bold mb-4 flex items-center gap-2 border-b border-gray-800 pb-2">
+            <i class="fa-solid fa-house-user accent-khaki"></i> 군 특별공급 공고
+        </h3>
+        <ul id="aptNoticeList" class="flex-1 overflow-y-auto text-[11px] space-y-3">
+            </ul>
+        </section>
+</div>
         </div>
 
         <div class="xl:col-span-1">
@@ -229,4 +269,3 @@ html.light .btn-khaki {
 
 </body>
 </html>
-
