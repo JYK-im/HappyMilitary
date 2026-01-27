@@ -484,5 +484,107 @@ function formatTimeAgo(date) {
     if (diff < 1440) return `${Math.floor(diff / 60)}시간 전`;
     return `${Math.floor(diff / 1440)}일 전`;
 }
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('bannerContainer');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
 
+    if (nextBtn && prevBtn && container) {
+        nextBtn.addEventListener('click', () => {
+            container.scrollBy({ left: 300, behavior: 'smooth' });
+        });
+        prevBtn.addEventListener('click', () => {
+            container.scrollBy({ left: -300, behavior: 'smooth' });
+        });
+    }
+});
+
+// 게시판 전환 함수
+function switchBoard(boardName) {
+    // 섹션 숨기기/보이기
+    const homeSec = document.getElementById('homeSection');
+    const freeSec = document.getElementById('freeBoardSection');
+    
+    // 메뉴 활성화 디자인 변경
+    document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+
+    if (boardName === 'free') {
+        homeSec.style.display = 'none';
+        freeSec.classList.remove('hidden');
+        loadPosts(); // 게시글 불러오기
+    } else if (boardName === 'home') {
+        homeSec.style.display = 'block';
+        freeSec.classList.add('hidden');
+    }
+}
+
+// 모달 제어
+function openWriteModal() {
+    if (!currentUser) {
+        alert("로그인이 필요합니다!");
+        handleLogin();
+        return;
+    }
+    document.getElementById('writeModal').classList.remove('hidden');
+}
+
+function closeWriteModal() {
+    document.getElementById('writeModal').classList.add('hidden');
+}
+
+// 게시글 저장 (Firebase)
+function savePost() {
+    const title = document.getElementById('postTitle').value;
+    const content = document.getElementById('postContent').value;
+
+    if (!title || !content) {
+        alert("제목과 내용을 모두 입력해주세요.");
+        return;
+    }
+
+    const newPostRef = db.ref('posts/free').push();
+    newPostRef.set({
+        title: title,
+        content: content,
+        uid: currentUser.uid,
+        userName: currentUser.displayName,
+        userPhoto: currentUser.photoURL,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => {
+        alert("게시글이 등록되었습니다!");
+        document.getElementById('postTitle').value = '';
+        document.getElementById('postContent').value = '';
+        closeWriteModal();
+    });
+}
+
+// 게시글 목록 불러오기
+function loadPosts() {
+    const postList = document.getElementById('postList');
+    db.ref('posts/free').orderByChild('timestamp').on('value', (snapshot) => {
+        let html = '';
+        const data = snapshot.val();
+        if (data) {
+            // 최신순 정렬을 위해 배열로 변환
+            const posts = Object.values(data).reverse();
+            posts.forEach(post => {
+                html += `
+                    <div class="bg-card p-5 rounded-2xl shadow-md border border-transparent hover:border-gray-700 transition-all cursor-pointer">
+                        <div class="flex items-center gap-2 mb-2">
+                            <img src="${post.userPhoto}" class="w-5 h-5 rounded-full">
+                            <span class="text-[11px] font-bold">${post.userName}</span>
+                            <span class="text-[10px] text-gray-600">${formatTimeAgo(post.timestamp)}</span>
+                        </div>
+                        <h3 class="font-bold text-base mb-1">${post.title}</h3>
+                        <p class="text-sm text-gray-400 line-clamp-2">${post.content}</p>
+                    </div>
+                `;
+            });
+            postList.innerHTML = html;
+        } else {
+            postList.innerHTML = '<p class="text-center py-10 text-gray-600">첫 번째 주인공이 되어보세요! 🪖</p>';
+        }
+    });
+}
 
