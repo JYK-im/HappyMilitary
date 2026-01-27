@@ -7,6 +7,42 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
+.banner-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 12px;
+            transition: all 0.2s ease;
+            border-radius: 1.25rem; 
+            scroll-snap-align: start;
+            height: 50px;
+            
+            width: calc((100vw - 64px) / 2); 
+            min-width: calc((100vw - 64px) / 2);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .banner-box:hover {
+            border-color: #8a9a5b !important;
+            transform: translateY(-2px);
+        }
+
+        /* PC 사이드바 환경 최적화 */
+        @media (min-width: 1280px) {
+            .banner-box {
+                width: calc((300px - 20px) / 2); 
+                min-width: calc((300px - 20px) / 2);
+            }
+        }
+
+        .banner-title { font-size: 13px; font-weight: 800; margin-bottom: 2px; }
+        .banner-desc { font-size: 10px; color: #8a9a5b; font-weight: 600; }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+
 /* 메뉴바 가로 스크롤바 숨기기 */
 #mainMenu::-webkit-scrollbar { display: none; }
 #mainMenu { -ms-overflow-style: none; scrollbar-width: none; }
@@ -166,15 +202,55 @@ html.light .btn-khaki {
                 </div>
             </section>
 
-            <section class="space-y-3">
-                <a href="https://blog.naver.com" target="_blank" class="block bg-card p-4 rounded-xl border border-gray-800 hover:border-[#8a9a5b] transition-all group">
-                    <p class="text-[10px] accent-khaki font-bold mb-1">행군 공식 블로그</p>
-                    <p class="font-bold text-sm group-hover:underline text-white">군인가족 혜택 가이드 보기</p>
-                </a>
-                <a href="https://www.welfare.mil.kr/kukinfo/board/board.do?forwardName=kukinfo.board.list&be_id=h_package&ssv=bm_title&sm=OR&kw=&ct=0&cateCd1=0&area_cd1=" class="block bg-card p-4 rounded-xl border border-gray-800 hover:border-[#8a9a5b] transition-all group">
-                    <p class="text-[10px] accent-khaki font-bold mb-1">추천 서비스</p>
-                    <p class="font-bold text-sm">국방복지단 혜택 확인</p>
-                </a>
+            <section class="relative group mt-6">
+                <button id="prevBtn" class="absolute left-[-10px] top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 shadow-lg rounded-full p-1.5 hidden md:group-hover:block border border-gray-200 dark:border-gray-700">
+                    <i class="fa-solid fa-chevron-left text-[10px] text-gray-500"></i>
+                </button>
+                <button id="nextBtn" class="absolute right-[-10px] top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 shadow-lg rounded-full p-1.5 hidden md:group-hover:block border border-gray-200 dark:border-gray-700">
+                    <i class="fa-solid fa-chevron-right text-[10px] text-gray-500"></i>
+                </button>
+
+                <div id="bannerContainer" class="flex overflow-x-auto scroll-smooth gap-3 snap-x no-scrollbar pb-2">
+                    <div class="grid grid-rows-2 grid-flow-col gap-3">
+                        <a href="https://www.welfare.mil.kr/" target="_blank" class="banner-box bg-card shadow-sm border border-transparent dark:border-gray-700">
+                            <span class="banner-title">국군복지단</span>
+                            <span class="banner-desc">#복지 #혜택</span>
+                        </a>
+                        <a href="https://www.narasarang.or.kr/" target="_blank" class="banner-box bg-card shadow-sm border border-transparent dark:border-gray-700">
+                            <span class="banner-title">나라사랑포털</span>
+                            <span class="banner-desc">#적금 #복지</span>
+                        </a>
+                        <a href="#" class="banner-box bg-card shadow-sm border border-transparent dark:border-gray-700">
+                            <span class="banner-title">국방헬프콜</span>
+                            <span class="banner-desc">#상담 #도움</span>
+                        </a>
+                        <a href="#" class="banner-box bg-card shadow-sm border border-transparent dark:border-gray-700">
+                            <span class="banner-title">군인공제회</span>
+                            <span class="banner-desc">#금융 #저축</span>
+                        </a>
+                        <a href="#" class="banner-box bg-card shadow-sm border border-transparent dark:border-gray-700">
+                            <span class="banner-title">병무청</span>
+                            <span class="banner-desc">#행정 #민원</span>
+                        </a>
+                        <a href="#" class="banner-box bg-card shadow-sm border border-transparent dark:border-gray-700">
+                            <span class="banner-title">예비군</span>
+                            <span class="banner-desc">#훈련 #일정</span>
+                        </a>
+                        <a href="#" class="banner-box bg-card shadow-sm border border-transparent dark:border-gray-700">
+                            <span class="banner-title">테스트1</span>
+                            <span class="banner-desc">#훈련 #일정</span>
+                        </a>
+                        <a href="#" class="banner-box bg-card shadow-sm border border-transparent dark:border-gray-700">
+                            <span class="banner-title">테스트2</span>
+                            <span class="banner-desc">#훈련 #일정</span>
+                        </a>
+                        <a href="#" class="banner-box bg-card shadow-sm border border-transparent dark:border-gray-700">
+                            <span class="banner-title">테스트3</span>
+                            <span class="banner-desc">#훈련 #일정</span>
+
+                        </a>
+                    </div>
+                </div>
             </section>
         </div>
 
@@ -192,6 +268,19 @@ html.light .btn-khaki {
         <p class="text-center py-10 text-gray-600 animate-pulse text-xs">최신 블로그 소식을 가져오는 중...</p>
     </div>
 </section>
+<section id="freeBoardSection" class="hidden space-y-4">
+        <div class="flex justify-between items-center bg-card p-6 rounded-2xl shadow-lg">
+            <h2 class="text-xl font-bold flex items-center gap-2">
+                <i class="fa-solid fa-list accent-khaki"></i> 자유게시판
+            </h2>
+            <button onclick="openWriteModal()" class="btn-khaki px-4 py-2 rounded-xl text-sm flex items-center gap-2">
+                <i class="fa-solid fa-pen"></i> 글쓰기
+            </button>
+        </div>
+        <div id="postList" class="space-y-3">
+            </div>
+    </section>
+
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch"> 
 <section class="bg-card p-6 rounded-2xl shadow-xl border-b border-[#8a9a5b]/30 flex flex-col h-[400px]"> <div class="mb-4">
@@ -227,7 +316,22 @@ html.light .btn-khaki {
         </section>
 </div>
         </div>
-
+<div id="writeModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="bg-card w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-gray-800">
+        <div class="p-4 border-b border-gray-800 flex justify-between items-center">
+            <h3 class="font-bold text-lg text-white">글 쓰기</h3>
+            <button onclick="closeWriteModal()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="p-4 space-y-4">
+            <input type="text" id="postTitle" placeholder="제목을 입력하세요" class="w-full bg-black/30 border border-gray-700 p-3 rounded-xl outline-none focus:border-[#8a9a5b]">
+            <textarea id="postContent" rows="8" placeholder="군대 생활, 고민, 정보 무엇이든 공유해보세요!" class="w-full bg-black/30 border border-gray-700 p-3 rounded-xl outline-none focus:border-[#8a9a5b] resize-none"></textarea>
+        </div>
+        <div class="p-4 bg-black/20 flex gap-2">
+            <button onclick="closeWriteModal()" class="flex-1 py-3 rounded-xl font-bold bg-gray-800 text-gray-400">취소</button>
+            <button onclick="savePost()" class="flex-1 py-3 rounded-xl font-bold btn-khaki">등록하기</button>
+        </div>
+    </div>
+</div>
         <div class="xl:col-span-1">
             <section class="bg-card p-5 rounded-2xl h-[650px] flex flex-col shadow-2xl relative overflow-hidden transition-all">
     <h2 class="text-sm font-bold mb-4 accent-khaki border-b border-gray-800 pb-2 uppercase tracking-widest flex items-center gap-2">
@@ -276,5 +380,3 @@ html.light .btn-khaki {
 
 </body>
 </html>
-
-
