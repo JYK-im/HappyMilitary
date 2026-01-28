@@ -1,7 +1,7 @@
 
 const firebaseConfig = {
   apiKey: "AIzaSyDaNmDpDXgiuELEO65Wk0PazVT2yeQeags",
-  authDomain: "dividend-b090d.firebaseapp.com",
+  authDomain: "hang-goon.kr",
   databaseURL: "https://dividend-b090d-default-rtdb.firebaseio.com",
   projectId: "dividend-b090d",
   storageBucket: "dividend-b090d.firebasestorage.app",
