@@ -38,37 +38,145 @@ function handleLogin() {
         });
 }
 
-function updateUI(user) {
+// script.js의 updateUI 함수를 이 내용으로 교체하세요.
+async function updateUI(user) {
+    console.log("1. updateUI 실행됨. 유저 UID:", user ? user.uid : "로그아웃 상태");
+    
     if (user) {
-        const overlay = document.getElementById('chatBlindOverlay');
-        if (overlay) {
-            overlay.classList.add('opacity-0');
-            setTimeout(() => overlay.classList.add('hidden'), 500);
-        }
+        currentUser = user; // 전역 변수에 현재 유저 저장
+        try {
+            // 1. DB에서 사용자 정보를 가져옵니다.
+            const userRef = db.ref('users/' + user.uid);
+            const snapshot = await userRef.once('value');
+            const userData = snapshot.val();
+            console.log("2. DB 조회 성공:", userData);
 
-        const chatArea = document.getElementById('chatContentArea');
-        chatArea.classList.remove('opacity-20', 'pointer-events-none', 'select-none');
-        
-        const input = document.getElementById('chatInput');
-        const sendBtn = document.querySelector('#chatContentArea button'); // ID 대신 셀렉터로 확실히 지정
+            // 2. 실명 정보(realName)가 없다면 모달창을 보여줍니다.
+            if (!userData || !userData.realName) {
+                console.log("3. 추가 정보 없음 -> 모달 오픈");
+                document.getElementById('profileModal').classList.remove('hidden');
+                
+                const loginBtn = document.getElementById('loginBtn');
+                if (loginBtn) {
+                    loginBtn.innerText = "로그아웃";
+                    loginBtn.onclick = handleLogout;
+                }
+                return; 
+            }
 
-        if (input) {
-            input.disabled = false;
-            input.placeholder = `${user.displayName}님, 대화에 참여하세요!`;
-        }
+            // 3. 정보가 있다면 채팅창을 활성화합니다.
+            activateChatInterface(userData.realName);
 
-        if (sendBtn) {
-            sendBtn.disabled = false;
-            sendBtn.classList.remove('opacity-50');
-            sendBtn.classList.add('cursor-pointer', 'active:scale-95');
-        }
-
-        const loginBtn = document.getElementById('loginBtn');
-        if (loginBtn) {
-            loginBtn.innerText = "로그아웃";
-            loginBtn.onclick = handleLogout;
+        } catch (error) {
+            // 권한 에러(Permission Denied)가 나더라도 신규 유저로 간주하고 모달을 띄웁니다.
+            console.error("DB 조회 에러(정상적인 신규 유저 흐름):", error);
+            document.getElementById('profileModal').classList.remove('hidden');
         }
     }
+}
+
+// 채팅창 활성화 로직 분리
+function activateChatInterface(realName) {
+    const overlay = document.getElementById('chatBlindOverlay');
+    if (overlay) {
+        overlay.classList.add('opacity-0');
+        setTimeout(() => overlay.classList.add('hidden'), 500);
+    }
+
+    const chatArea = document.getElementById('chatContentArea');
+    if (chatArea) {
+        chatArea.classList.remove('opacity-20', 'pointer-events-none', 'select-none');
+    }
+    
+    const input = document.getElementById('chatInput');
+    const sendBtn = document.querySelector('#chatContentArea button');
+
+    if (input) {
+        input.disabled = false;
+        input.placeholder = `${realName}님, 환영합니다!`;
+    }
+
+    if (sendBtn) {
+        sendBtn.disabled = false;
+        sendBtn.classList.remove('opacity-50');
+        sendBtn.classList.add('cursor-pointer', 'active:scale-95');
+    }
+
+    const loginBtn = document.getElementById('loginBtn');
+    if (loginBtn) {
+        loginBtn.innerText = "로그아웃";
+        loginBtn.onclick = handleLogout;
+    }
+}
+let confirmationResult = null; // 인증 결과를 담을 변수
+
+// 1. 페이지 로드 시 리캡차 초기화
+window.onload = function() {
+    if (!window.recaptchaVerifier) {
+        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+            'size': 'invisible', // 사용자에게 보이지 않게 설정
+            'callback': (response) => {
+                console.log("리캡차 인증 완료");
+            }
+        });
+    }
+};
+
+// 2. 인증문자 발송 함수
+// script.js에 이 함수들이 있는지 꼭 확인하세요!
+function sendVerificationCode() {
+    const phone = document.getElementById('regPhone').value.trim();
+    if (!/^010\d{8}$/.test(phone)) {
+        alert("01012345678 형식으로 입력해주세요.");
+        return;
+    }
+    
+    const appVerifier = window.recaptchaVerifier;
+    const formattedPhone = "+82" + phone.substring(1);
+
+    auth.signInWithPhoneNumber(formattedPhone, appVerifier)
+        .then((result) => {
+            confirmationResult = result;
+            alert("인증번호가 발송되었습니다.");
+            document.getElementById('otpSection').classList.remove('hidden');
+        }).catch((error) => {
+            alert("인증 실패: " + error.message);
+        });
+}
+
+function confirmCode() {
+    const code = document.getElementById('verificationCode').value.trim();
+    confirmationResult.confirm(code)
+        .then(() => {
+            alert("인증 성공!");
+            saveUserProfile();
+        }).catch(() => alert("인증번호가 틀립니다."));
+}
+
+// 4. 최종 데이터 저장 함수 (기존 saveUserProfile 수정)
+function saveUserProfile() {
+    const name = document.getElementById('regName').value.trim();
+    const birth = document.getElementById('regBirth').value;
+    const phone = document.getElementById('regPhone').value.trim();
+
+    if (!name || !birth || !phone) {
+        alert("모든 정보를 입력해 주세요!");
+        return;
+    }
+
+    db.ref('users/' + currentUser.uid).set({
+        realName: name,
+        birthdate: birth,
+        phoneNumber: phone,
+        email: currentUser.email,
+        createdAt: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => {
+        alert("회원 등록이 완료되었습니다!");
+        document.getElementById('profileModal').classList.add('hidden');
+        updateUI(currentUser); // 화면 갱신하여 채팅창 활성화
+    }).catch((error) => {
+        console.error("저장 실패:", error);
+    });
 }
 
 // 로그아웃 함수
@@ -587,4 +695,67 @@ function loadPosts() {
         }
     });
 }
+// 슬라이더용 이미지 데이터 (원하는 만큼 추가하세요)
+const sliderData = [
+    "https://images.unsplash.com/photo-1599508704512-2f19efd1e35f?q=80&w=1200",
+    "https://images.unsplash.com/photo-1585123334904-845d60e97b29?q=80&w=1200",
+    "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=1200",
+    "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200"
+];
 
+let sliderIdx = 0;
+let sliderTimer = null;
+
+function initImageSlider() {
+    const track = document.getElementById('imageSliderTrack');
+    const dotsContainer = document.getElementById('sliderDots');
+    
+    // 1. 접속 시 랜덤 시작 인덱스 설정
+    sliderIdx = Math.floor(Math.random() * sliderData.length);
+
+    // 2. 이미지 HTML 생성
+    track.innerHTML = sliderData.map(imgSrc => `
+        <div class="min-w-full h-full relative cursor-pointer overflow-hidden" onclick="window.open('${imgSrc}', '_blank')">
+            <img src="${imgSrc}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105" alt="Slide Image">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+        </div>
+    `).join('');
+
+    // 3. 인디케이터(점) 생성
+    dotsContainer.innerHTML = sliderData.map((_, i) => `
+        <div class="w-2 h-2 rounded-full bg-white/40 transition-all duration-300"></div>
+    `).join('');
+
+    // 4. 초기 위치 설정 및 시작
+    updateSliderPosition();
+    startAutoSlide();
+}
+
+function updateSliderPosition() {
+    const track = document.getElementById('imageSliderTrack');
+    const dots = document.querySelectorAll('#sliderDots div');
+    
+    track.style.transform = `translateX(-${sliderIdx * 100}%)`;
+    
+    // 점 활성화 상태 업데이트
+    dots.forEach((dot, i) => {
+        if(i === sliderIdx) {
+            dot.classList.add('bg-[#8a9a5b]', 'w-5');
+            dot.classList.remove('bg-white/40');
+        } else {
+            dot.classList.remove('bg-[#8a9a5b]', 'w-5');
+            dot.classList.add('bg-white/40');
+        }
+    });
+}
+
+function startAutoSlide() {
+    if(sliderTimer) clearInterval(sliderTimer);
+    sliderTimer = setInterval(() => {
+        sliderIdx = (sliderIdx + 1) % sliderData.length;
+        updateSliderPosition();
+    }, 5000); // 5초 간격
+}
+
+// DOM 로드 완료 후 실행
+document.addEventListener('DOMContentLoaded', initImageSlider);
