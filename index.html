@@ -8,6 +8,36 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
+/* 공지사항 최적화 애니메이션 */
+@keyframes marquee-optimized {
+    0% { transform: translateX(80vw); } 
+    100% { transform: translateX(-100%); }
+}
+
+.animate-marquee-notice {
+    display: inline-block;
+    white-space: nowrap;
+    animation: marquee-optimized 25s linear infinite;
+}
+
+/* 모바일 전용 속도 조절 (화면이 작을 때 너무 빨리 지나가지 않도록) */
+@media (max-width: 640px) {
+    .animate-marquee-notice {
+        animation-duration: 15s; /* 모바일은 이동 거리가 짧으므로 시간을 줄여야 속도가 일정함 */
+    }
+}
+/* 마우스 올리면 일시정지 */
+.animate-marquee-notice:hover {
+    animation-play-state: paused;
+}
+
+/* 공지사항 컨테이너 높이 수정 (글자가 잘리지 않게) */
+.notice-container {
+    height: 40px;
+    display: flex;
+    align-items: center;
+}
+
 .banner-box {
             display: flex;
             flex-direction: column;
@@ -163,17 +193,18 @@ html.light .btn-khaki {
         <i id="themeIcon" class="fa-solid fa-moon text-yellow-500"></i>
     </button>
 
-            <div class="hidden md:flex gap-2">
-                <button onclick="alert('카카오 로그인 준비 중')" class="bg-[#FEE500] text-black text-[10px] px-3 py-1.5 rounded-full font-bold">카카오</button>
-                <button onclick="alert('네이버 로그인 준비 중')" class="bg-[#03C75A] text-white text-[10px] px-3 py-1.5 rounded-full font-bold">네이버</button>
+           <div class="hidden md:flex gap-2">
+                <button onclick="alert('카카오 로그인 준비 중')" class="hidden bg-[#FEE500] text-black text-[10px] px-3 py-1.5 rounded-full font-bold">카카오</button>
+                <button onclick="alert('네이버 로그인 준비 중')" class="hidden bg-[#03C75A] text-white text-[10px] px-3 py-1.5 rounded-full font-bold">네이버</button>
             </div>
+
             <button id="loginBtn" onclick="handleLogin()" class="text-xs bg-white text-black px-5 py-2 rounded-full font-bold hover:bg-gray-200 transition-all">구글 로그인</button>
         </div>
     </header>
 
-<nav id="boardNavBar" class="sticky top-0 z-50 bg-transparent backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-all">
-    <div class="max-w-7xl mx-auto">
-        <ul id="mainMenu" class="flex overflow-x-auto whitespace-nowrap scrollbar-hide px-4 py-3 gap-8 text-[13px] font-bold text-gray-500 dark:text-gray-400">
+<nav id="boardNavBar" class="sticky top-0 z-50 bg-transparent backdrop-blur-md transition-all">
+    <div class="max-w-7xl mx-auto px-4 border-b border-gray-200 dark:border-gray-800">
+        <ul id="mainMenu" class="flex overflow-x-auto whitespace-nowrap scrollbar-hide py-3 gap-8 text-[13px] font-bold text-gray-500 dark:text-gray-400">
             <li class="menu-item active cursor-pointer relative py-1" onclick="switchBoard('home')">홈</li>
             <li class="menu-item cursor-pointer relative py-1 hover:text-gray-900 dark:hover:text-white transition-colors" onclick="switchBoard('free')">자유게시판</li>
             <li class="menu-item cursor-pointer relative py-1 hover:text-gray-900 dark:hover:text-white transition-colors" onclick="switchBoard('info')">정보공유</li>
@@ -183,10 +214,40 @@ html.light .btn-khaki {
         </ul>
     </div>
 </nav>
-
+<div class="max-w-7xl mx-auto mt-3"> 
+<div class="bg-[#1a1a1a] border border-gray-800 rounded-xl flex items-center shadow-sm h-10 overflow-hidden">
+        <div class="flex items-center gap-2 px-3 bg-[#1a1a1a] z-20 border-r border-gray-800 shrink-0 h-full">
+            <i class="fas fa-megaphone text-[#8a9a5b] text-[10px]"></i>
+            <span class="text-[10px] font-bold text-[#8a9a5b]">공지</span>
+        </div>
+        
+        <div class="flex-1 overflow-hidden">
+            <div class="animate-marquee-notice">
+                <span class="text-[12px] text-gray-400">
+                    🚀 행군(행복한 군생활) 오픈! 군인을 위한 통합 커뮤니티입니다. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+	<a href="https://open.kakao.com/me/Shambles_Official">
+                    🚀 군인할인 홍보이미지는 무료로 등록해드립니다. (~'26.12.31)</a>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
     <main class="max-w-7xl mx-auto grid grid-cols-1 xl:grid-cols-4 gap-6 mt-8">
         
         <div class="xl:col-span-1 space-y-6">
+<div class="max-w-5xl mx-auto">
+    <div class="relative overflow-hidden rounded-2xl shadow-2xl aspect-[16/9] bg-[#1a1a1a] group">
+        <div id="imageSliderTrack" class="flex w-full h-full transition-transform duration-700 ease-in-out">
+            </div>
+
+        <div class="absolute top-4 left-4 z-10 pointer-events-none">
+            <span class="bg-[#8a9a5b] text-black text-[12px] font-black px-2 py-1.5 rounded-full uppercase tracking-wider shadow-lg">군인할인</span>
+        </div>
+
+        <div id="sliderDots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10"></div>
+    </div>
+</div>
+
  <section class="bg-card p-5 rounded-2xl shadow-xl transition-all">
                 <h2 class="text-sm font-bold mb-4 accent-khaki flex items-center gap-2 border-b border-gray-800 pb-2">
                     <i class="fa-solid fa-fire"></i> 실시간 인기글
@@ -374,6 +435,47 @@ html.light .btn-khaki {
         <p class="mt-1 font-bold">본 사이트는 군사보안 규정을 준수하며, 보안 위배 게시물은 즉시 삭제됩니다.</p>
     </footer>
 
+
+<div id="profileModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+    <div class="bg-card w-full max-w-sm rounded-2xl p-6 border border-gray-800 shadow-2xl">
+        <h2 class="text-xl font-bold mb-2 text-white italic">회원 정보 등록</h2>
+        <p class="text-[11px] text-gray-500 mb-6 font-medium leading-relaxed">
+            안전한 커뮤니티 활동을 위해<br>최초 1회 본인 확인 정보가 필요합니다.
+        </p>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="text-[10px] font-bold text-[#8a9a5b] block mb-1">성함</label>
+                <input type="text" id="regName" placeholder="실명을 입력하세요" 
+                    class="w-full bg-black/40 border border-gray-700 p-3 rounded-xl text-xs outline-none focus:border-[#8a9a5b]">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-[#8a9a5b] block mb-1">생년월일</label>
+                <input type="date" id="regBirth" 
+                    class="w-full bg-black/40 border border-gray-700 p-3 rounded-xl text-xs outline-none focus:border-[#8a9a5b]">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-[#8a9a5b] block mb-1">휴대폰 번호</label>
+                <input type="tel" id="regPhone" placeholder="01012345678" 
+                    class="w-full bg-black/40 border border-gray-700 p-3 rounded-xl text-xs outline-none focus:border-[#8a9a5b]">
+            </div>
+<div id="recaptcha-container"></div> <div id="otpSection" class="hidden mt-4 space-y-2">
+    <label class="text-[10px] font-bold text-[#8a9a5b] block mb-1">인증번호 6자리</label>
+    <div class="flex gap-2">
+        <input type="text" id="verificationCode" placeholder="000000" 
+            class="flex-1 bg-black/40 border border-gray-700 p-3 rounded-xl text-xs outline-none">
+        <button onclick="confirmCode()" class="bg-[#8a9a5b] px-4 rounded-xl text-[10px] font-bold text-black">확인</button>
+    </div>
+</div>
+
+<button id="sendSmsBtn" onclick="sendVerificationCode()" class="w-full btn-khaki mt-8 py-3 rounded-xl text-xs font-black shadow-lg shadow-khaki/10">
+    인증문자 받기
+</button>
+
+        </div>
+       
+    </div>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
